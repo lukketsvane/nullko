@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
-    const storeDoc = db.collection('stores').doc(id);
-    const storeSnapshot = await storeDoc.get();
+    const storeDoc = doc(db, 'stores', id);
+    const storeSnapshot = await getDoc(storeDoc);
 
-    if (storeSnapshot.exists) {
+    if (storeSnapshot.exists()) {
       return NextResponse.json({ id: storeSnapshot.id, ...storeSnapshot.data() });
     } else {
       return NextResponse.json({ message: 'Store not found' }, { status: 404 });

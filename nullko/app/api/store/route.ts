@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    const storesCollection = db.collection('stores');
-    const storesSnapshot = await storesCollection.get();
+    const storesCollection = collection(db, 'stores');
+    const storesSnapshot = await getDocs(storesCollection);
     const storesList = storesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return NextResponse.json(storesList);
   } catch (error) {

@@ -1,11 +1,14 @@
-import admin from 'firebase-admin';
+import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(require('./serviceAccountKey.json')),
-  });
-}
+const adminConfig = {
+  credential: applicationDefault(),
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+};
 
-const db = admin.firestore();
+const app = initializeApp(adminConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { admin, db };
+export { db, auth };

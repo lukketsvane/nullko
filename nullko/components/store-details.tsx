@@ -10,11 +10,7 @@ type Store = {
   maxWaitRoom: number;
 };
 
-type StoreDetailsProps = {
-  store: Store;
-};
-
-const StoreDetails: React.FC<StoreDetailsProps> = ({ store }) => {
+export default function StoreDetails({ store }: { store: Store }) {
   return (
     <div>
       <h1 className="text-4xl font-bold text-gray-800 mb-4">{store.name}</h1>
@@ -34,6 +30,4 @@ const StoreDetails: React.FC<StoreDetailsProps> = ({ store }) => {
       </div>
     </div>
   );
-};
-
-export default StoreDetails;
+}

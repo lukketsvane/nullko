@@ -4,23 +4,35 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import StoreDetails from '@/components/store-details';
+import RegisterTicket from '@/components/register-ticket';
 import QueueStatus from '@/components/queue-status';
-import QrCode from '@/components/QrCode';
+
+type Store = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  info: string;
+  maxWaitRoom: number;
+};
 
 export default function StorePage() {
-  const [store, setStore] = useState(null);
+  const [store, setStore] = useState<Store | null>(null);
   const { id } = useParams();
 
   useEffect(() => {
-    async function fetchStore() {
-      try {
-        const response = await axios.get(`/api/store/${id}`);
-        setStore(response.data);
-      } catch (error) {
-        console.error('Error fetching store:', error);
+    if (id) {
+      async function fetchStore() {
+        try {
+          const response = await axios.get(`/api/store/${id}`);
+          setStore(response.data);
+        } catch (error) {
+          console.error('Error fetching store:', error);
+        }
       }
+      fetchStore();
     }
-    if (id) fetchStore();
   }, [id]);
 
   if (!store) {
@@ -31,8 +43,8 @@ export default function StorePage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6">
         <StoreDetails store={store} />
+        <RegisterTicket storeId={store.id} />
         <QueueStatus storeId={store.id} />
-        <QrCode storeId={store.id} />
       </div>
     </div>
   );

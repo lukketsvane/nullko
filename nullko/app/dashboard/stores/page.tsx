@@ -1,33 +1,33 @@
-// app/dashboard/stores/page.tsx
-"use client";
+'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import axios from 'axios';
 
-type Store = { id: string; name: string; description: string; };
+type Store = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  info: string;
+  maxWaitRoom: number;
+};
 
 export default function StoreListPage() {
   const [stores, setStores] = useState<Store[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStores() {
       try {
         const response = await axios.get('/api/store');
         setStores(response.data);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching stores:', error);
-        setLoading(false);
       }
     }
     fetchStores();
   }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
