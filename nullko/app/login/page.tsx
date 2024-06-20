@@ -36,36 +36,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-whiteSmoke">
       <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Log in to your account</h2>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Logg inn</h2>
           </div>
           <div className="mt-8">
             <div>
-              <div>
-                <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                  <span className="sr-only">Log in with Facebook</span>
-                  Facebook
-                </button>
-              </div>
-              <div className="mt-3">
-                <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                  <span className="sr-only">Log in with Google</span>
+              <div className="space-y-3">
+                <button className="w-full inline-flex justify-center py-2 px-4 border border-black bg-blue-600 text-sm font-medium text-white hover:bg-blue-700">
                   Google
                 </button>
-              </div>
-              <div className="mt-3">
-                <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-black text-sm font-medium text-white hover:bg-gray-700">
-                  <span className="sr-only">Log in with Apple</span>
-                  Apple
+                <button className="w-full inline-flex justify-center py-2 px-4 border border-black bg-blue-500 text-sm font-medium text-white hover:bg-blue-600">
+                  Bank ID
                 </button>
-              </div>
-              <div className="mt-3">
-                <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700">
-                  <span className="sr-only">Log in with Stripe</span>
+                <button className="w-full inline-flex justify-center py-2 px-4 border border-black bg-blue-400 text-sm font-medium text-white hover:bg-blue-500">
                   Stripe
+                </button>
+                <button className="w-full inline-flex justify-center py-2 px-4 border border-black bg-orange-600 text-sm font-medium text-white hover:bg-orange-700">
+                  Vipps
                 </button>
               </div>
             </div>
@@ -83,7 +73,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && <p className="text-red-600">{error}</p>}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">E-post</label>
                 <div className="mt-1">
                   <input
                     id="email"
@@ -91,14 +81,14 @@ export default function Login() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">Passord</label>
                 <div className="mt-1">
                   <input
                     id="password"
@@ -106,7 +96,7 @@ export default function Login() {
                     type="password"
                     autoComplete="current-password"
                     required
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-black focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -117,15 +107,15 @@ export default function Login() {
                 </div>
               </div>
               <div>
-                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  Login
+                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Logg inn
                 </button>
               </div>
             </form>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" legacyBehavior>
-                <span className="font-medium text-indigo-600 hover:text-indigo-500">Sign up</span>
+              Har du ikke en konto?{' '}
+              <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Registrer deg
               </Link>
             </p>
           </div>

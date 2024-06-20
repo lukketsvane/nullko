@@ -8,15 +8,15 @@ const db = getFirestore(firebaseApp);
 
 export async function POST(req: NextRequest) {
   try {
-    const { lineID, shopID, time, timeStamp } = await req.json();
+    const { name, shopID, time, timeStamp } = await req.json();
 
-    if (!lineID || !shopID || !time || !timeStamp) {
+    if (!name || !shopID || !time || !timeStamp) {
       return NextResponse.json({ error: 'All fields must be filled out.' }, { status: 400 });
     }
 
-    const spotRef = doc(collection(db, 'spotIDs')); // Assuming 'spotIDs' is your collection name
+    const spotRef = doc(collection(db, 'spotIDs'));
     await setDoc(spotRef, {
-      lineID,
+      name,
       shopID,
       time,
       timeStamp,

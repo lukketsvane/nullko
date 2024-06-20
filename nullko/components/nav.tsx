@@ -1,46 +1,60 @@
 // components/nav.tsx
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Nav() {
   return (
     <nav className="bg-white border-b-4 border-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0 border-r-4 border-black pr-4 h-full flex items-center">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center h-24 border-b-4 border-black">
+          <div className="h-full flex items-center">
             <Link href="/">
-              <span className="text-3xl font-bold">null:kø</span>
+              <Image src="https://framerusercontent.com/images/VJ7uXYRKVyOwsCyx4pD6X4lro.png" alt="logo" width={300} height={150} />
             </Link>
           </div>
-          <div className="hidden md:flex items-center space-x-0">
-            <Link href="/products">
-              <span className="border-l-4 border-black px-3 py-2 text-sm font-medium text-black hover:text-gray-700 h-full flex items-center">Produkt</span>
+        </div>
+        <div className="flex justify-between items-center h-16">
+          <div className="hidden md:flex items-center h-full space-x-0">
+            <Link href="/about">
+              <span className="h-16 w-auto px-4 flex items-center justify-center  border-black text-sm font-medium text-black hover:bg-pink hover:text-white">Om</span>
             </Link>
+            <Link href="/features">
+              <span className="h-16 w-auto px-4 flex items-center justify-center border-l-4 border-black text-sm font-medium text-black hover:bg-pink hover:text-white">Funksjoner</span>
+            </Link>
+            <Link href="/pricing">
+              <span className="h-16 w-auto px-4 flex items-center justify-center border-l-4 border-r-4 border-black text-sm font-medium text-black hover:bg-pink hover:text-white">Priser</span>
+            </Link>
+          </div>
+          <div className="flex items-center h-full">
             <Link href="/signup">
-              <span className="border-l-4 border-black bg-white text-black hover:bg-gray-200 hover:text-gray-700 px-3 py-2 text-sm font-medium h-full flex items-center">Registrer deg</span>
-            </Link>
-            <Link href="/login">
-              <span className="border-l-4 border-black bg-black text-white hover:bg-gray-700 px-3 py-2 text-sm font-medium h-full flex items-center">Logg inn</span>
+              <span className="h-16 w-auto flex px-4 items-center justify-center border-l-4 border-black bg-black text-white hover:bg-pink hover:text-black text-sm font-medium ml-auto">Registrer deg</span>
             </Link>
           </div>
-          <div className="-mr-2 flex md:hidden items-center justify-center w-16 h-16 bg-black">
+          <div className="md:hidden items-center justify-center w-16 h-full bg-black">
             <Link href="/login">
-              <span className="text-white text-sm font-medium">Logg inn</span>
+              <span className="h-16 w-full flex items-center justify-center text-white text-sm font-medium text-center">Logg inn</span>
             </Link>
           </div>
         </div>
       </div>
 
       <div className="md:hidden">
-        <div className="px-2 pt-2 pb-3 sm:px-3">
-          <Link href="/products">
-            <span className="border-b-4 border-black block px-3 py-2 text-base font-medium text-black hover:text-gray-700 h-full flex items-center">Produkt</span>
+        <div className="sm:px-3 ">
+          <Link href="/about">
+            <span className="h-16 w-full flex items-center justify-center px-4 border-b-4 border-black text-base font-medium text-black hover:bg-pink hover:text-white">Om</span>
+          </Link>
+          <Link href="/features">
+            <span className="h-16 w-full flex items-center justify-center px-4 border-b-4 border-black text-base font-medium text-black hover:bg-pink hover:text-white">Funksjoner</span>
+          </Link>
+          <Link href="/pricing">
+            <span className="h-16 w-full flex items-center justify-center px-4 border-b-4 border-black text-base font-medium text-black hover:bg-pink hover:text-white">Priser</span>
           </Link>
           <Link href="/signup">
-            <span className="border-b-4 border-black bg-white text-black hover:bg-gray-200 hover:text-gray-700 block px-3 py-2 text-base font-medium h-full flex items-center">Registrer deg</span>
+            <span className="h-16 w-full flex items-center justify-center px-4 border-b-4 border-black bg-white text-black hover:bg-pink hover:text-white text-base font-medium">Registrer deg</span>
           </Link>
           <Link href="/login">
             <div className="bg-black h-16 flex items-center justify-center">
-              <span className="text-white text-base font-medium">Logg inn</span>
+              <span className="h-16 w-full flex items-center justify-center text-white text-base font-medium text-center">Logg inn</span>
             </div>
           </Link>
         </div>
