@@ -1,9 +1,9 @@
 // app/login/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase';
+import { auth, onAuthStateChanged } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +13,16 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push('/dashboard');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +59,7 @@ export default function Login() {
               <div className="mt-3">
                 <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-black text-sm font-medium text-white hover:bg-gray-700">
                   <span className="sr-only">Log in with Apple</span>
-                  X X
+                  Apple
                 </button>
               </div>
               <div className="mt-3">

@@ -1,30 +1,22 @@
+// lib/firebase.ts
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDNsQymgB5sl8J5_aG0WKP31BBQ2zjXgb8",
+  authDomain: "nullqueue-60a5e.firebaseapp.com",
+  databaseURL: "https://nullqueue-60a5e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "nullqueue-60a5e",
+  storageBucket: "nullqueue-60a5e.appspot.com",
+  messagingSenderId: "100566126101",
+  appId: "1:100566126101:web:bf907ba45036d88fbe481c",
+  measurementId: "G-56KQBPG2M3"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 
-function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return () => unsubscribe();
-  }, []);
-
-  return { user };
-}
-
-export { auth, db, useAuth };
+export { firebaseApp, db, auth, onAuthStateChanged };

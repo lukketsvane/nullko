@@ -23,7 +23,7 @@ export const Sidebar = () => {
       <nav className="flex-1 p-6">
         <ul className="space-y-4">
           <li>
-            <Link href="/dashboard/stores">
+            <Link href="/dashboard/shops">
               <div className="flex items-center space-x-2 cursor-pointer">
                 <Search />
                 <span>Søk etter butikk</span>
@@ -39,10 +39,10 @@ export const Sidebar = () => {
             </Link>
           </li>
           <li>
-            <Link href="/dashboard/stores">
+            <Link href="/dashboard/shops">
               <div className="flex items-center space-x-2 cursor-pointer">
                 <Search />
-                <span>Mine butikker</span>
+                <span>Butikker</span>
               </div>
             </Link>
           </li>
