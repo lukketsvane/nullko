@@ -41,7 +41,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-black">{shop.name}</h1>
           <Link href="/dashboard/shops">
-            <div className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer">Tilbake</div>
+            <div className="px-4 py-2 bg-black text-white rounded cursor-pointer">Tilbake</div>
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

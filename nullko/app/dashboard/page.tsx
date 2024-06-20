@@ -9,12 +9,12 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-4">Nullkø</h1>
       <div className="space-y-4">
         <Link href="/dashboard/register-ticket">
-          <div className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer">
+          <div className="px-4 py-2 bg-black text-white rounded cursor-pointer">
             Registrer billett
           </div>
         </Link>
         <Link href="/dashboard/my-tickets">
-          <div className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer">
+          <div className="px-4 py-2 bg-black text-white rounded cursor-pointer">
             Mine kø kort
           </div>
         </Link>
