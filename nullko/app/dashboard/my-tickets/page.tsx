@@ -4,8 +4,9 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 type Ticket = {
   id: string;
@@ -17,37 +18,47 @@ type Ticket = {
 
 export default function MyTicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const userID = "your-user-id"; // Replace with the actual user ID logic
+  const [userID, setUserID] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTickets() {
-      try {
-        const response = await axios.get(`/api/tickets/${userID}`);
-        setTickets(response.data);
-      } catch (error) {
-        console.error('Error fetching tickets:', error);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserID(user.uid);
+        fetchTickets(user.uid);
       }
-    }
-    fetchTickets();
-  }, [userID]);
+    });
 
-  if (!tickets.length) {
+    return () => unsubscribe();
+  }, []);
+
+  const fetchTickets = async (userID: string) => {
+    try {
+      const response = await axios.get(`/api/tickets/${userID}`);
+      setTickets(response.data);
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+    }
+  };
+
+  if (!userID) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-whiteSmoke p-8">
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 border-2 border-black">
-        <h1 className="text-4xl font-bold text-black mb-6">Mine Billetter</h1>
-        {tickets.map(ticket => (
-          <Link key={ticket.id} href={`/dashboard/my-tickets/${ticket.id}`}>
-            <div className="bg-gray-100 p-4 rounded shadow-md mb-4 cursor-pointer">
-              <h2 className="text-2xl font-bold text-black">{ticket.name}</h2>
-              <p className="text-dimGrey">Tid: {ticket.time}</p>
-              <p className="text-dimGrey">Butikk ID: {ticket.shopID}</p>
-            </div>
-          </Link>
-        ))}
+        <h1 className="text-4xl font-bold text-black mb-6">My Tickets</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tickets.map((ticket) => (
+            <Link key={ticket.id} href={`/dashboard/my-tickets/${ticket.id}`}>
+              <div className="bg-white p-4 shadow-md rounded-lg border border-gray-200 cursor-pointer">
+                <h2 className="text-2xl font-bold text-black mb-2">{ticket.name}</h2>
+                <p className="text-dimGrey">Shop ID: {ticket.shopID}</p>
+                <p className="text-dimGrey">Time: {ticket.time}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

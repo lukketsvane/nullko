@@ -2,10 +2,12 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import QRCode from 'qrcode.react';
 import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 type QueueFormProps = {
   shopID: string;
@@ -16,17 +18,35 @@ export default function QueueForm({ shopID }: QueueFormProps) {
   const [time] = useState(new Date().toString());
   const [timeStamp] = useState(Date.now());
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [userID, setUserID] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserID(user.uid);
+      } else {
+        router.push('/login'); // Redirect to login if not authenticated
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userID) {
+      console.error('User not authenticated');
+      return;
+    }
+
     try {
       await axios.post('/api/spotIDs', {
         name,
         shopID,
         time,
         timeStamp,
-        userID: "your-user-id" // Replace with the actual user ID logic
+        userID
       });
       router.push('/dashboard/my-tickets');
     } catch (error) {
