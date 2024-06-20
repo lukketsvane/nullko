@@ -1,34 +1,24 @@
 // components/shop-list.tsx
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+"use client";
+
+import useSWR from 'swr';
 import ShopCard from './shop-card';
 
-type Shop = {
-  id: string;
-  name: string;
-  description: string;
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function ShopList() {
-  const [shops, setShops] = useState<Shop[]>([]);
+const ShopList: React.FC = () => {
+  const { data, error } = useSWR('/api/shops', fetcher);
 
-  useEffect(() => {
-    async function fetchShops() {
-      try {
-        const response = await axios.get('/api/shops');
-        setShops(response.data);
-      } catch (error) {
-        console.error('Error fetching shops:', error);
-      }
-    }
-    fetchShops();
-  }, []);
+  if (error) return <div>Failed to load shops</div>;
+  if (!data) return <div>Loading...</div>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {shops.map(shop => (
-        <ShopCard shop={shop} key={shop.id} />
+    <div>
+      {data.map((shop: any) => (
+        <ShopCard key={shop.id} id={shop.id} name={shop.name} address={shop.address} description={shop.description} />
       ))}
     </div>
   );
-}
+};
+
+export default ShopList;

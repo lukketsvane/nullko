@@ -1,9 +1,7 @@
 const nextConfig = {
-    images: {
-      domains: ['framerusercontent.com'],
-      domains: ['via.placeholder.com/400']
-    },
-  };
-  
-  export default nextConfig;
-  
+  images: {
+    domains: ['framerusercontent.com', 'via.placeholder.com'],
+  },
+};
+
+export default nextConfig;

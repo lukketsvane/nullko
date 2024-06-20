@@ -1,0 +1,2703 @@
+var runningAsAdmin = false; // will be true if indexAdmin.js is read
+
+var version = "1.0.4"
+updateDiv("nullkoContact","Om Null Kø (" + version + ")")
+
+const loggedOutLinks = document.querySelectorAll('.logged-out');
+const loggedInLinks = document.querySelectorAll('.logged-in');
+
+const mainTitle = document.getElementById('mainTitle');
+const mainTitleLink = document.getElementById('brandLogoLink');
+const shopServicesDiv = document.getElementById('shopServicesDiv');
+const shopInfoDiv = document.getElementById('shopInfoDiv');
+const spotDiv = document.querySelector('.spotDiv');
+
+
+const mySpotsList = document.getElementById('mySpots');
+const myShopsOwnerList = document.getElementById('myShopsOwner');
+const myShopsStaffList = document.getElementById('myShopsStaff');
+
+const loggedInStaffLinks = document.querySelectorAll('.logged-in-shop-staff');
+const loggedInOwnerLinks = document.querySelectorAll('.logged-in-shop-owner');
+
+
+const shopOwnerList = document.getElementById('shopOwners');
+const shopStaffList = document.getElementById('shopStaff');
+
+const searchUserList = document.getElementById('searchUserList');
+const searchUserForm = document.getElementById('searchUser-form');
+
+
+const shopUserAccount = document.getElementById('shopUserAccount');
+
+const lineFlowFilters = document.getElementById('lineFlowFilters');
+
+
+
+
+
+const accountLink = document.getElementById('userAccount');
+const userShopRoleLink = document.getElementById('userShopRole'); 
+
+
+const accountDetails = document.querySelector('.account-details');
+
+const messageDiv = document.getElementById('messageDiv');
+
+
+const mainContainer = document.getElementById('mainContainer');
+const shopLineStatus = document.getElementById('shopLineStatus'); // Used to show status when in LineFlow mode
+
+const shopServicesList = document.getElementById('shopServiceList');
+
+const shopList = document.querySelector('.shops');
+
+
+const lineFlowContainer = document.getElementById('lineFlow');
+const lineFlowlist = document.getElementById('flowList');
+
+const addShopServicesForm = document.getElementById('addServices-form');
+
+
+var liveSpotFS1; // Spotcard // Used for live update of names on the spotcard...
+var liveSpotFS2; // Spotcard (also used in shopStatus)
+var liveSpotFS3; // Spotcard (also used in shopStatus)
+var liveSpotFS4; // Spotcard: Only used for shop waitroom num.... 
+var liveSpotFS5; // Spotcard: The new array listener
+var liveSpotFS6; // Spotcard: Listener for Spotcard messages
+var liveFlowFS1; // Line Flow: Line flow items (admin)
+var liveFlowFS2; // Line Flow: Shop Status (admin)
+var liveFlowFS3; // Line Flow: Number of people in line (admin)
+var liveShopFS0; // Shop Status: Basic status, mainly lineID
+var liveShopFS1; // Shop Status:
+var liveShopFS2; // Shop Status: Used on the Shop Services page for update of currentSpot
+var liveServicesFS1; // myServices (in owners view)
+
+var liveUserMessages; // Live listener for user messages
+
+var liveMySpotsFS1; // User menu - listing of my spots
+var liveMyShopsFS1; // User menu - owner shops
+var liveMyShopsFS2; // User menu - staff shops
+
+
+
+
+var shopQRcode; // Global variable, used for QR code on spot card, and for shop (check if it needs to be separated)
+var spotQRcode; // Global variable, used for QR code on spot card, and for shop (check if it needs to be separated)
+
+
+var shopName = "Shop Name" // Defult
+var shopAddress = "Address" // Defult
+var shopCustomerInformation = "We are using Null Kø" // Defult
+var shopWaitroomNum = 100 // Default
+var shopTotalPersRegLimit = 100 // Default
+var shopMaxPersPerReg = 1 // By default (maks number PER group, IF activated...)
+var shopPhone = 0 // Default
+var shopColor = 0 // Default color selection
+
+var shopActiveLine = "" // Default empty
+
+
+var shopLimitOneSpot = true // By default
+var shopLimitTotalPersReg = false // By default
+var shopAllowGroup = false // By default
+var shopRequireLogin = true  // By default (changed from false)
+var shopRequireServices = true // By default (changed from false)
+var shopStaffCreateLine = false // By default
+var shopStaffSeeServices = false // By default
+var shopLineSimple = true // By default this is not true... this is set in the shop, but only valid for a NEW LINE (checked in the actual line)
+var requireConfirmation = true // By default this is true, to be conservative
+var allowDeleteInSpot = false // By default this is false, conservative
+var onlyThreeBtn = false // Relates to # buttons in advanced line. By default this is false, conservative to normal btns
+var shopSendInitialSMS = false // This sends an SMS to the user at signup, with link to the spotCard (currently not set up as option)
+
+var shopNewSpotview = true; // This should be a shop option... for NEW the spotsLeft is main, in OLD your spotNum is main
+
+var shopRoomNotice = false; // Conservative default;
+var moveProcessingToTop = false; // Conservative default;
+var shopRequestFeedbackOn = false; // Conservative default;
+
+
+var showWaitingTime = true;  // In the line flow only
+var currentLineSimple = false // This is for the current line we are interacting with...
+
+
+var shopTxtSoon = "Din tur nærmer seg. Du trenger ikke å komme til venterommet enda, men behold deg i nærheten.";
+var shopTxtWaitroom = "Snart din tur, kom tilbake til venterommet nå.";
+var shopTxtNext = "Bare en foran deg, du vil snart bli ropt opp.";
+var shopTxtNow = "Din tur neste, og du vil snart bli ropt opp.";
+
+var shopTxtCompleted = "Takk for besøket";
+var shopTxtAlert = "Du har blitt flyttet frem i køen. Vennligst kom til venterommet nå.";
+var shopTxtProcessing = "Nå er det din tur.";
+var shopTxtNoShow = "Du har ikke møtt opp til din time, og vil bli tatt ut av køen.";
+var shopTxtDeleted = "Du er fjernet fra køen (e.g. ikke møtt opp til timen).";
+var shopTxtSelfDeleted = "Du har fjernet deg selv fra køen.";
+
+var shopLimits = []; // Array to hold the specific shop limits
+var shopLimitTxts = []; // Array to hold the shop specific texts for the shop limits
+
+var shopTriggerLimits = [5]
+var shopTriggerLimitTexts = ["Gå til venterom"]
+
+var shopArrayList = [] // This is an array of arrays, the full array for the open shop, should allways be up to date. Is update in the lineFlowMainContainer, in liveFlowFS3....
+var shopDeletedArray = [] // This is a local shop owner staff version of the deleted array, before it is updated into the normal arrays
+
+
+var lineChangeType = "default" // Alternative is "modified". Default covers "added" and "removed"
+var serviceLineChangeType = "default" // Alternative is "modified". Default covers "added" and "removed"
+var filterSpots = "default" // alternative is "no filter", which shows also the spots that are completed (status 9)
+
+var showHistoric = false; // By default
+var historicLine = "";
+
+
+var autoAcceptNext = false // By default false, but allows auto acceptance of the "next in line" when QR is scanned
+
+var baseUrl = window.location.href.substring(window.location.href).split("?")[0];
+baseUrl = baseUrl.split("indexAdmin.html")[0]; // Remove the admin.html if it is there...
+
+
+var simpleQR = false // By default...
+var spotcardView = 0 // Default view 0 shows information and NOT the QR code, 1 shows the QR code, whilst 2 shows all
+var spotcardViewPersistent = true // Default false - when false the QR code will disapear when refreshed...
+
+var softIsOwner = false; // default
+var softIsStaff = false; // default
+
+const queryString = window.location.search;
+
+const urlParams = new URLSearchParams(queryString);
+var shop = urlParams.get('shop')
+var line = urlParams.get('line')
+var spot = urlParams.get('spot')
+var service = urlParams.get('service') // Planned for going directly to a specific service, not yet used...
+var viewCase = urlParams.get('view') 
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  var elems = document.querySelectorAll('.sidenav');
+  var instances = M.Sidenav.init(elems);
+});
+
+
+
+
+const setupUI = (user) => {
+
+  if (user) {
+
+
+    if(!user.isAnonymous) {
+      db.collection('users').doc(user.uid).get().then(doc => {
+
+        accountLink.innerHTML = `Logged in as ${fullname}`
+  
+        const html = `
+          <div>Logged in as ${fullname}</div>
+          <div>${user.email}</div><br>
+        `;
+        accountDetails.innerHTML = html;
+  
+      });
+  
+      loggedInLinks.forEach(item => item.style.display = 'block');
+      loggedOutLinks.forEach(item => item.style.display = 'none');  
+
+    } else {
+        accountLink.innerHTML = `Logged in as Guest`
+  
+        const html = `
+          <div>Logged in as Guest</div>
+        `;
+        accountDetails.innerHTML = html;
+
+      loggedInLinks.forEach(item => item.style.display = 'block');
+      loggedOutLinks.forEach(item => item.style.display = 'block');
+    }
+
+  } else {
+    accountDetails.innerHTML = '';
+    accountLink.innerHTML = 'account';
+
+    loggedOutLinks.forEach(item => item.style.display = 'block');
+    loggedInLinks.forEach(item => item.style.display = 'none');
+
+  }
+
+};
+
+
+function setupShopRelatedMenus(shopDoc){
+
+    mainTitle.innerHTML = shopDoc.data().name;
+    mainTitleLink.href = "?shop="+shop;
+
+    if (user != null) {
+
+      var isOwnerOrStaffHere = isOwnerOrStaff(shopDoc,uid);
+      var isOwnerHere = isOwner(shopDoc,uid);
+
+
+      if (isOwnerHere) {
+        loggedInOwnerLinks.forEach(item => item.style.display = 'block');      
+        loggedInStaffLinks.forEach(item => item.style.display = 'block');
+        userShopRoleLink.innerHTML = "person"
+
+        softIsOwner = true;
+        softIsStaff = false;
+
+      }  else if (isOwnerOrStaffHere) {
+        loggedInOwnerLinks.forEach(item => item.style.display = 'none');
+        loggedInStaffLinks.forEach(item => item.style.display = 'block');
+        userShopRoleLink.innerHTML = "people"
+
+        softIsOwner = false;
+        softIsStaff = true;
+
+      } else {
+        loggedInOwnerLinks.forEach(item => item.style.display = 'none');
+        loggedInStaffLinks.forEach(item => item.style.display = 'none');
+        lineFlowContainer.style.display = 'none';
+        shopLineStatus.style.display = 'none';
+        userShopRoleLink.innerHTML = ""
+
+        softIsOwner = false;
+        softIsStaff = false;
+      }
+    } else {
+        loggedInOwnerLinks.forEach(item => item.style.display = 'none');
+        loggedInStaffLinks.forEach(item => item.style.display = 'none');
+        lineFlowContainer.style.display = 'none';
+        shopLineStatus.style.display = 'none';
+        userShopRoleLink.innerHTML = ""
+
+        softIsOwner = false;
+        softIsStaff = false;
+    }
+}
+
+
+
+function endAllLiveListeners() {
+  if (liveSpotFS1 != null) {liveSpotFS1(); console.log("cancelled spotFS1")}; // Spotcard
+  if (liveSpotFS2 != null) {liveSpotFS2(); console.log("cancelled spotFS2")}; // Spotcard
+  if (liveSpotFS3 != null) {liveSpotFS3(); console.log("cancelled spotFS3")}; // Spotcard
+  if (liveSpotFS4 != null) {liveSpotFS4(); console.log("cancelled spotFS4")}; // Spotcard
+  if (liveSpotFS5 != null) {liveSpotFS5(); console.log("cancelled spotFS5")}; // Spotcard
+  if (liveFlowFS1 != null) {liveFlowFS1(); console.log("cancelled spotFS1")}; // Line Flow
+  if (liveFlowFS2 != null) {liveFlowFS2(); console.log("cancelled liveFlowFS2")}; // Line Flow
+  if (liveFlowFS3 != null) {liveFlowFS3(); console.log("cancelled liveFlowFS3")}; // Line Flow
+  if (liveShopFS0 != null) {liveShopFS0(); console.log("cancelled liveShopFS0")}; // Shop
+  if (liveShopFS1 != null) {liveShopFS1(); console.log("cancelled liveShopFS1")}; // Shop
+  if (liveShopFS2 != null) {liveShopFS2(); console.log("cancelled liveShopFS2")}; // Shop
+  if (liveServicesFS1 != null) {liveServicesFS1(); console.log("cancelled liveServicesFS1")}; // Owners Service list
+}
+
+function endUserLiveListeners() {
+  if (liveUserDoc != null) {liveUserDoc(); console.log("Cancelled the liveUserDoc")}; // Old live userDoc was active....
+  if (liveMySpotsFS1 != null) {liveMySpotsFS1(); console.log("cancelled liveMySpotsFS1")}; // Spotcard
+  if (liveMyShopsFS2 != null) {liveMyShopsFS2(); console.log("cancelled liveMySpotsFS1")}; // Spotcard
+}
+
+
+function setupMainContainer() {
+console.log("Check log 399 - setup main c")
+
+
+  console.log("Current settings is:")
+  console.log("User is owner:", softIsOwner);
+  console.log("User is staff:", softIsStaff);
+  console.log("User is runningAsAdmin:", runningAsAdmin);
+
+  if (runningAsAdmin) {
+    console.log("You are logged in as staff or owner, will therefore run setupMainContainerAdmin");
+    setupMainContainerAdmin();
+    return
+  }
+    console.log("You are logged in as normal user, will therefore run the normal setupMainContainer");
+    
+
+
+
+
+
+
+  mainContainer.innerHTML = "";
+
+  endAllLiveListeners()
+
+  if(shop != null ) {
+
+    db.collection('shops').doc(shop).onSnapshot(shopSnapshot => {
+      if (shopSnapshot.exists) {
+
+        if (checkDeleted(shopSnapshot)) {
+          return
+        }
+
+        updateShopInfo(shopSnapshot);
+        updateShopOptions(shopSnapshot);
+        updateShopTxtVariables(shopSnapshot);
+
+        setupShopRelatedMenus(shopSnapshot);
+
+
+
+
+
+
+
+        if (viewCase == "" || viewCase == null) {
+
+          if(spot != null && line != null && shop != null) {
+            viewCase = "spotCard"
+          } else {
+            viewCase = "shopServices"
+          }
+        }
+
+        if (viewCase == "spotCard") {
+          if(spot != null && line != null && shop != null) {
+
+            spotCardMainContainer(shopSnapshot);
+            return
+
+          } else if(shop != null) {
+            viewCase = "shopServices";
+
+          } else {
+            defaultMainContainer();
+            return
+          }
+        } else if (viewCase != "") {
+          viewCase = "shopServices";
+        }
+
+        if (viewCase == "shopServices") {
+          if(shop != null) {
+            shopServicesMainContainer(shopSnapshot);
+            return
+          } else {
+            defaultMainContainer()
+            return
+          }
+        }
+
+      } else {
+        defaultMainContainer()
+        return
+      }
+    })
+
+  } else {
+    defaultMainContainer()
+    return
+  }
+}
+
+
+function defaultMainContainer() {
+    lineFlowContainer.style = "display: none;";  // Owner info
+    shopLineStatus.style = "display: none;";
+    shopServicesDiv.style = "display: none;";
+    shopInfoDiv.style = "display: none;";
+    spotDiv.style = "display: none;";
+    
+    /*
+    <center><h5>Null Kø - søk etter en butikk i søkefeltet.</h5>
+    <img src="img/nullkoPP.gif" style="width: 400px; margin-top: 10px;"></center>
+    */
+
+    mainContainer.innerHTML = `<div class="row">
+      <div class="col l6 offset-l3 m8 offset-m2 s12">
+        <div class="slider">
+          <ul class="slides">
+            <li>
+              <img src="img/nullko1_lb.png"> <!-- random image -->
+              <div class="caption center-align">
+                <h3 class="black-text white">#1</h3>
+                <h5 class="black-text white">Scann QR kode med mobil kameraet</h5>
+              </div>
+            </li>
+            <li>
+              <img src="img/nullko2_lb.png"> <!-- random image -->
+              <div class="caption center-align">
+                <h3 class="black-text  white">#2</h3>
+                <h5 class="black-text white">Hva kan vi hjelpe deg med?</h5>
+              </div>
+            </li>
+            <li>
+              <img src="img/nullko3_lb.png"> <!-- random image -->
+              <div class="caption center-align">
+                <h3 class="black-text  white">#3</h3>
+                <h5 class="black-text white">Bruk ventetiden der det passer deg.</h5>
+              </div>
+            </li>
+            <li>
+              <img src="img/nullko4_lb.png"> <!-- random image -->
+              <div class="caption center-align">
+                <h3 class="black-text  white">#4</h3>
+                <h5 class="black-text white">Hold deg oppdatert på nettside eller epost.</h5>
+              </div>
+            </li>
+            <li>
+              <img src="img/nullko5_lb.png"> <!-- random image -->
+              <div class="caption center-align">
+                <h3 class="black-text  white">#5</h3>
+                <h5 class="black-text white">Gå til venterommet.</h5>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <br>`
+
+    var elems = document.querySelectorAll('.slider');
+    var sliderOptions = {
+      'height': 400,
+      'duration': 500,
+      'interval': 3000      
+    }
+    var instances = M.Slider.init(elems, sliderOptions);
+
+  }
+
+function spotCardMainContainer(shopDoc) {
+
+    lineFlowContainer.style = "display: none;";
+    shopLineStatus.style = "display: none;"; // Used for admin info... (!)
+    shopServicesDiv.style = "display: none;";
+    spotDiv.style = "display: block;";
+    
+    shopInfoDiv.style = "display: block;";
+
+    if (softIsOwner || softIsStaff) {
+      shopLineStatus.innerHTML = `<h7><center><a href="indexAdmin.html?shop=${shop}">Du er eier eller ansatt av denne køen. Klikk her for administrator siden.</a></center></h7>`
+      shopLineStatus.style = "display: block;";  
+    }
+  
+
+    spotDiv.innerHTML = ""
+
+
+    console.log("Check 1");
+
+    db.collection('shops').doc(shop).collection("lines").doc(line).collection('lightLine').doc(spot).get()
+    .then(docSnapshot => {
+      if (docSnapshot.exists) {
+
+
+        console.log("Check 2");
+
+        console.log("We have following data:", shop, " ", line, " ", spot);
+
+        db.collection('shops').doc(shop).collection("lines").doc(line).collection('line').doc(spot).get().then(spotSnapshotOnce => {
+
+          if (softIsStaff || softIsOwner) {
+            console.log("Do not transfer the card...")
+            console.log("This should be tested in transferOpenSpot... not here")
+          } else {
+            transferOpenSpot()
+          }
+
+          if (spotSnapshotOnce.data().name == "Default Name" || spotSnapshotOnce.data().name == "Default name" || spotSnapshotOnce.data().name == "Navn ikke registrert"){
+            if (confirm("Unnskyld, vi fikk litt problemer med å finne din kontakt informasjon. Kan du sjekke at vi fikk registrert korrekt?")) {
+              checkAccountInfo()
+            }
+
+          }
+
+
+
+          if (liveSpotFS1 != null) {liveSpotFS1(); console.log("Cancelled old liveSpotFS1")}; 
+          liveSpotFS1 = db.collection('shops').doc(shop).collection("lines").doc(line).collection('line').doc(spot).onSnapshot(spotSnapshot => {
+            renderSpotCard(spotSnapshot);
+          })
+
+          if (liveSpotFS6 != null) {liveSpotFS6(); console.log("Cancelled old liveSpotFS6")}; 
+          console.log("Her setter vi opp live-listener for messages på spotcard...")     
+          liveSpotFS6 = db.collection('shops').doc(shop).collection('lines').doc(line).collection('line').doc(spot).collection("messageList").onSnapshot(messageListSnapshot => {
+
+            console.log("Her er første read på livelisten spotcard listen")
+
+            messageListSnapshot.forEach(messageListItem => {
+
+              console.log("Her er avlesning startet fra livelisten spotcard listen")
+              console.log(messageListItem);
+
+
+              displayMessageID(messageListItem.data().messageID,messageListItem.data().toUserID);
+            }) 
+          })
+
+        }).catch(e => {
+          console.log("No access to this full spotcard" + e)
+          console.log("Propose alternative login...")
+          changeUserLoginSpot()
+        })
+        
+        renderShopInfo(shopDoc);
+
+        var includeSpotPrint = true
+        if ((softIsStaff || softIsOwner) && includeSpotPrint) {
+        }        
+
+      } else {
+        console.log("Spot not found...")
+        viewCase = "shopServices";
+        spot = null;
+        setupMainContainer()
+      }
+      
+    }).catch(err => {
+      console.log("Error looking for the spot...", err)
+      viewCase = "shopServices";
+      spot = null;
+      setupMainContainer()
+    });
+}
+
+
+function shopServicesMainContainer(shopDoc) {
+
+
+    lineFlowContainer.style = "display: none;";
+    shopLineStatus.style = "display: block;";
+    shopServicesDiv.style = "display: block;";
+    shopInfoDiv.style = "display: block;";
+    spotDiv.style = "display: none;";
+    
+
+    spotDiv.innerHTML = ""
+
+    db.collection('shops').doc(shop).collection('services').orderBy("order").get().then(servicesSnapshot => {
+      
+
+      var htmlServices = renderFullServiceList(servicesSnapshot)
+      shopServicesDiv.innerHTML = htmlServices
+
+      renderShopTerms(shopDoc) // Renders directly in the shopTermsDiv (which is added in the renderFullServiceList)
+
+      if(servicesSnapshot.length != 0) {
+        addListener()
+      } else {
+      }
+    })
+
+    /*
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems);
+    });
+    */
+
+    renderShopInfo(shopDoc);
+
+    setupLiveCounter(shop)
+
+    /*
+    if (shopDoc.data().options.requireLogin) {
+      if (user == null) {
+        console.log("You need to log in...")
+
+        showNewLogin();
+
+
+      } else {
+        console.log("You are fine....")
+      }
+    } else {
+      console.log("Log in not required...")
+    }
+    */
+}
+
+
+function renderGroupText(shopDoc) {
+  /*
+    if (shopAllowGroup) {
+      
+    } 
+    htmlTemp += `<p>Klikk under for å registere deg i køen</p>`;
+    htmlTemp += '<form id="registerServices-Form" onsubmit="registrerBtn.disabled = true; return true;">'
+    htmlTemp += `<br>
+    <button id="registrerBtn" class="btn grey btn-small darken-2 z-depth-2">Registrer</button>
+    <a href="#" onclick="resetBtn('registrerBtn');return false;" class="btn-floating btn-small waves-effect waves-light grey"><i class="material-icons">autorenew</i></a>
+    </form>
+    </div>
+    `
+  */
+  return ""
+  }
+
+  
+
+function renderShopTerms(shopDoc) {
+
+
+  var shopTermsDiv = document.getElementById("terms_check")
+
+  var shopTermsHTML = "<br>"
+
+  var activeTermsArray = [] // each element will include a term with [Art, ID, Rev, SubRev, Type]
+
+      if (shopDoc.data().termsArray != null) {
+        activeTermsArray = shopDoc.data().termsArray
+      }
+  
+      if (activeTermsArray.length > 0) {
+        console.log("Check the terms that we found")
+        shopTermsHTML += `Ved å registrer deg hos ${shopDoc.data().name} godkjenner du:`
+      } else {
+        console.log("No terms found, continue)")
+      }
+      
+      var terms_count = 0
+  
+  
+      for (i = 0; i < activeTermsArray.length; i++) {
+        shopTermsHTML += `<div id="terms_${i}">`
+  
+        if (activeTermsArray[i].Rev != 0) {
+          console.log("We found some t&c that should be approved first...")
+    
+  
+          if (activeTermsArray[i].Type == 1) {
+
+            var shopID = shopDoc.id
+            console.log("Here shop ID: " + shopID)
+
+            shopTermsHTML +=  `
+            <div>
+              <input type="checkbox" name="termsCheckbox" data-art="${activeTermsArray[i].Art}" id="terms_${activeTermsArray[i].Art}_check" checked disabled/>
+              <span class="grey-text">${activeTermsArray[i].Title}<a href="#!" title="Required" onclick="requiredTerm()"> * </a><a href="#!" id="termsShow_${activeTermsArray[i].Art}" data-art="${activeTermsArray[i].Art}" data-id="${activeTermsArray[i].ID}"> (mer info)</a></span>
+            </div>
+          `            
+  
+        } else if (activeTermsArray[i].Type == 2) {
+          shopTermsHTML += `
+            <label>
+              <input type="checkbox" name="termsCheckbox" data-art="${activeTermsArray[i].Art}" id="terms_${activeTermsArray[i].Art}_check"/>
+              <span>${activeTermsArray[i].Title}<a href="#!" title="Required" onclick="requiredTerm()"> * </a><a href="#!" id="termsShow_${activeTermsArray[i].Art}" data-art="${activeTermsArray[i].Art}" data-id="${activeTermsArray[i].ID}"> (mer info)</a></span>
+            </label>
+          `
+  
+        } else if (activeTermsArray[i].Type == 3) {
+          console.log("Dette har ikke blitt stilt inn enda... sjekk ut spesial T&C")
+          shopTermsHTML += `
+            <label>
+              <input type="checkbox" name="termsCheckbox" data-art="${activeTermsArray[i].Art}" id="terms_${activeTermsArray[i].Art}_check"/>
+              <span>${activeTermsArray[i].Title}<a href="#!" id="termsShow_${activeTermsArray[i].Art}" data-art="${activeTermsArray[i].Art}" data-id="${activeTermsArray[i].ID}"> (mer info)</a></span>
+            </label>
+          `
+
+        } else if (activeTermsArray[i].Type == 4) {
+          console.log("Dette har ikke blitt stilt inn enda... sjekk ut spesial T&C")
+          shopTermsHTML += `
+            <label>
+              <input type="checkbox" name="termsCheckbox" data-art="${activeTermsArray[i].Art}" id="terms_${activeTermsArray[i].Art}_check"/>
+              <span>${activeTermsArray[i].Title}<a href="#!" id="termsShow_${activeTermsArray[i].Art}" data-art="${activeTermsArray[i].Art}" data-id="${activeTermsArray[i].ID}"> (mer info)</a></span>
+            </label>
+          `
+
+        } else {
+
+
+        }
+          
+   
+        } else {
+          console.log("No t&c found...")
+        }
+    
+        shopTermsHTML += `
+        <div style="display:none" id="terms_${activeTermsArray[i].Art}_Art">${activeTermsArray[i].Art}</div>
+        <div style="display:none" id="terms_${activeTermsArray[i].Art}_Rev">${activeTermsArray[i].Rev}</div>
+        <div style="display:none" id="terms_${activeTermsArray[i].Art}_SubRev">${activeTermsArray[i].SubRev}</div>
+        <div style="display:none" id="terms_${activeTermsArray[i].Art}_Type">${activeTermsArray[i].Type}</div>
+        </div>`
+    
+        terms_count = i +1;
+  
+      }
+      
+      shopTermsHTML += `
+      <div style="display:none" id="terms_count">${terms_count}</div>
+      `  
+
+      shopTermsDiv.innerHTML = shopTermsHTML;
+      
+      for (j = 0; j < activeTermsArray.length; j++) {
+        console.log("Adding action")
+        let btnShow = document.getElementById('termsShow_'+activeTermsArray[j].Art);
+        btnShow.addEventListener('click', (e) => {
+          e.stopPropagation();
+          console.log("Show" + btnShow.getAttribute("data-id"))
+          let termsID = btnShow.getAttribute("data-id")
+          let termsArt = btnShow.getAttribute("data-art")
+          console.log("Is this defined? " + termsArt)
+          showConditions(shopDoc.id,termsID,termsArt)
+          
+        });
+      }
+}
+
+
+
+  
+
+
+
+
+
+
+
+
+function shopServices() {
+  viewCase = "shopServices";
+  setupMainContainer(); 
+}
+
+
+
+function checkDeleted(shopDoc){
+
+  if (shopDoc.data().deleted) {
+
+    shopServicesDiv.style = "display: none;";
+    shopInfoDiv.style = "display: none;";
+    spotDiv.style = "display: none;";
+
+    mainTitle.innerHTML = "Null Kø";
+    mainTitleLink.href = "/";
+
+    mainContainer.innerHTML =`
+    <center><h5>Butikken du søkte opp er slettet. Søk etter annen i søkefeltet.</h5>
+    <img src="img/nullkoPP.gif" style="width: 400px; margin-top: 10px;"></center>
+    `
+
+    return true
+  } else {
+    return false
+  }
+
+}
+
+
+
+
+
+
+
+function updateShopStatus(doc) {
+  mainContainer.innerHTML = doc.data().currentSpot;
+
+}
+
+
+function renderShopInfo(shopSnapshot) {
+  mainTitle.innerHTML = shopSnapshot.data().name;
+  mainTitleLink.href = "?shop="+shop;
+
+  
+
+  var viewDetails = "block"; // Default
+  if (viewCase == "spotCard") {
+    viewDetails = "none";
+  }
+
+  var tempHTMLmain = ""
+  if(shopSnapshot.length == 0) {
+    mainContainer.innerHTML = '<h5 class="center-align">No shop data</h5>';
+    return // Stop all else data read
+
+  } else {
+    tempHTMLmain += `
+    <div onclick="toggleShopDetails();return false;" class="col l8 offset-l2 s12" style="border: solid black;border-radius: 25px; margin-top:0px;padding: 5px;">
+      <div class="col l6 m6 s12">
+         <b>Sted:</b> ${shopSnapshot.data().name}      (more info)<br>
+         <div id="shopDetails" style="display: ${viewDetails}">
+          <b>Adresse:</b> ${shopSnapshot.data().address}<br>
+          <b>Telefon:</b> ${shopSnapshot.data().phone}<br>
+          <b>Informasjon:</b> ${shopSnapshot.data().information}<br>
+          <b>Max plasser i venterommet:</b> ${shopSnapshot.data().waitroomNum}<br> <br>
+        </div>
+      </div>
+      <div class="col l2 m6 s12" style="margin:auto;" align="center">      
+        <div id="shopqrcode" style="width:150px; height:150px;margin-bottom: 10px;"></div>
+      </div>
+    </div>
+      `
+    
+    shopInfoDiv.innerHTML = tempHTMLmain
+
+    if (shopQRcode != null) {
+      console.log(shopQRcode)
+      console.log("we already have a shop qr code... try to clear it")
+      shopQRcode.clear();
+    }
+    console.log("THe view case is..." + viewCase)
+    if (viewCase != "spotCard") {
+      shopQRcode = new QRCode(document.getElementById("shopqrcode"), {
+        width : 150,
+        height : 150
+      });
+  
+      var currentLink = baseUrl+"?shop="+shop
+      shopQRcode.makeCode(currentLink);
+  
+    } else {
+      document.getElementById("shopqrcode").style= "display: none;";
+    }
+  }
+}
+
+function toggleShopDetails() {
+  var shopDetailsDiv = document.getElementById("shopDetails")
+  if (shopDetailsDiv.style.display == "none") {
+    shopDetailsDiv.style.display = "block"
+  } else {
+    shopDetailsDiv.style.display = "none"
+  }
+}
+
+
+
+
+
+
+
+function updateShopInfo(shopDoc) {
+
+  console.log("shopDoc is now: " + shopDoc)
+
+  shopActiveLine = shopDoc.data().activeLine
+
+  shopName = shopDoc.data().name;
+  shopAddress = shopDoc.data().address;
+  shopCustomerInformation = shopDoc.data().information;
+  shopWaitroomNum = shopDoc.data().waitroomNum;
+  shopTotalPersRegLimit = shopDoc.data().totalPersReg;
+  shopMaxPersPerReg = shopDoc.data().maxPersPerReg;
+  shopPhone = shopDoc.data().phone;   
+  shopColor = shopDoc.data().color;   
+}
+
+
+
+
+function updateShopOptions(shopDoc) {
+    if (shopDoc.data().options != null) {
+      var shopOptions = shopDoc.data().options
+      shopLimitOneSpot = shopOptions.limitOneSpot;
+      shopLimitTotalPersReg.checked = shopOptions.limitTotalPersReg;
+      shopAllowGroup = shopOptions.allowGroup;
+      shopRequireLogin = shopOptions.requireLogin;
+      shopRequireServices = shopOptions.requireServices;
+      shopStaffCreateLine = shopOptions.staffCreateLine;
+      shopStaffSeeServices = shopOptions.staffSeeServices
+      shopLineSimple = shopOptions.lineSimple;
+      requireConfirmation = shopOptions.requireConfirmation;
+      allowDeleteInSpot = shopOptions.allowDeleteInSpot;
+      onlyThreeBtn = shopOptions.onlyThreeBtn;
+      shopSendInitialSMS = shopOptions.shopSendInitialSMS;
+      shopNewSpotview = shopOptions.shopNewSpotview;
+      shopRoomNotice = shopOptions.shopRoomNotice;
+      moveProcessingToTop = shopOptions.moveProcessingToTop;
+      shopRequestFeedbackOn = shopOptions.shopRequestFeedbackOn;
+
+    } else {
+      shopLimitOneSpot = true;
+      shopLimitTotalPersReg = false;
+      shopAllowGroup = false;
+      shopRequireLogin = true;
+      shopRequireServices = true;
+      shopStaffCreateLine = true;          
+      shopStaffSeeServices = false; // Conservative default
+      shopLineSimple = false;  // Decide default...
+      requireConfirmation = true; // Conservative default
+      allowDeleteInSpot = false; // Conservative default
+      onlyThreeBtn = false; // Conservative default
+      shopSendInitialSMS = false; // Conservative default
+      shopNewSpotview = false; // Conservative default
+      shopRoomNotice = false; // Conservative default;
+      moveProcessingToTop = false; // Conservative default;
+      shopRequestFeedbackOn = false; // Conservative default;
+    }  
+}
+
+
+function updateShopTxtVariables(shopDoc) {
+
+    if ((shopDoc.data().shopLimits != null) && (shopDoc.data().shopLimitTxts != null) ) {
+      shopLimits = shopDoc.data().shopLimits
+      shopLimitTxts = shopDoc.data().shopLimitTxts
+    } else {
+      shopLimits = [0,1,5,999]
+      shopLimitTxts = [
+        "Din tur neste, gjør deg klar. Du vil snart bli ropt opp på venterommet.",
+        "Bare en forran deg. Du blir snart ropt opp på venterommet.",
+        "Du kan nå gå til venterommet",
+        "Husk at vi tar rundt 20 kunder i timen"        
+      ]
+    }
+
+    if (shopDoc.data().shopTxts != null) {
+      var shopTxts = shopDoc.data().shopTxts
+      shopTxtCompleted = shopTxts.completed; // KEEP
+      shopTxtAlert = shopTxts.alert; // KEEP
+      shopTxtProcessing = shopTxts.processing; // KEEP
+      shopTxtNoShow = shopTxts.noShow; // KEEP
+      shopTxtDeleted = shopTxts.deleted; // KEEP
+      shopTxtSelfDeleted = shopTxts.selfDeleted; // KEEP
+    } else {
+      shopTxtCompleted = "Takk for besøket";
+      shopTxtAlert = "Vennligst kom til venterommet nå.";
+      shopTxtProcessing = "Det er nå din tur.";
+      shopTxtNoShow = "Du har ikke møtt opp til din time, og vil bli tatt ut av køen.";
+      shopTxtDeleted = "Du er fjernet fra køen (e.g. ikke møtt opp til timen).";
+      shopTxtSelfDeleted = "Du har fjernet deg selv fra køen.";
+
+    }
+  
+} 
+
+
+
+function renderFullServiceList(serviceSnapshot) {
+  var htmlTemp =`
+  <div class="col xl10 offset-xl1 s12" style="padding: 0px; color: margin 5px;">`
+  
+  htmlTemp += '<form id="registerServices-Form" onsubmit="registrerBtn.disabled = true; return true;">'
+  
+
+  if (shopAllowGroup) {
+    htmlTemp +=  `
+    <b>Hvor mange er det i din gruppe:</b>
+    <select class="browser-default" id="persInReg">
+    <option value="1" selected>Bare deg</option>`
+
+    var i;
+    for (i = 1; i < shopMaxPersPerReg; i++) {
+      htmlTemp +=  `<option value="` + (i+1) + `">Deg +` + i + ` pers</option>`
+    }
+
+    htmlTemp +=
+      `</select><br>
+    `;
+  }
+
+  if (serviceSnapshot.size == 0) {
+    htmlTemp += `<p>Klikk under for å registere deg i køen</p>`;
+    htmlTemp += `<br>
+    <button id="registrerBtn" class="btn grey btn-small darken-2 z-depth-2">Registrer</button>
+    <a href="#" onclick="resetBtn('registrerBtn');return false;" class="btn-floating btn-small waves-effect waves-light grey"><i class="material-icons">autorenew</i></a>
+    </form>
+    </div>
+    `
+  } else {
+
+    htmlTemp += `
+    <b>Velg tjenester og registrer (flere kryss er mulig):</b><br>`
+    serviceSnapshot.forEach(doc => {
+      const service = doc.data();
+
+      htmlTemp +=  `  
+        <label>
+          <input type="checkbox" id="${doc.id}" name="${service.service}" onclick="checkLoginRequirement()"/>
+          <span class="black-text" style="overflow:auto">${service.service}</span>
+        `;
+      if (doc.data().allowComment) {
+        htmlTemp +=  `  
+          <input type="textfield" name="comment">
+        `;
+      }
+      htmlTemp += `
+        </label><br>
+        `;
+
+    })
+
+    htmlTemp += `<br>
+    <button id="registrerBtn" class="btn grey btn-small darken-2 z-depth-2">Registrer</button>
+    <a href="#" onclick="resetBtn('registrerBtn');return false;" class="btn-floating btn-small waves-effect waves-light grey"><i class="material-icons">autorenew</i></a>
+    <div id="terms_check">T&C</div>
+    </form>
+    </div>
+    `
+  }
+return htmlTemp;
+}
+
+
+function resetRegBtn() {
+  resetBtn('registrerBtn');
+}
+function resetEmailBtn() {
+  resetBtn('emailBtn');
+}
+function resetSignUpBtn() {
+  resetBtn('signUpBtn');
+}
+function resetLogInBtn() {
+  resetBtn('logInBtn');
+}
+
+
+
+
+function addListener() {
+  registerServicesForm = document.querySelector('#registerServices-form');
+  if (registerServicesForm!=null) {
+    registerServicesForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (checkLoginRequirement()) {
+        signupForServices();
+      }
+
+      setTimeout(resetRegBtn, 3000);
+
+    })  
+  } else {
+    console.log("There where no places to add the listeners... add services, and reopen.")
+  }
+}
+
+
+function checkLoginRequirement() {
+  var result = false; // default
+
+  if ((user == null || user.isAnonymous) && shopRequireLogin) {
+    console.log("Trigger the login form... user needs to be logged in!")
+
+
+    var specialLoginMessageDiv = document.getElementById('specialLoginMessage');
+    specialLoginMessageDiv.innerHTML = "<b>Pga krav fra FHI, så må alle som besøker denne butikken registrere seg.</b>"
+    
+
+    console.log("Trigger SignUp form")
+    showNewLogin()
+
+  } else {
+    result = true;
+    console.log("Passed login check")    
+  }
+
+  return result
+}
+
+
+function setupLiveCounter(shop) {
+  liveShopFS0 = db.collection('shops').doc(shop).onSnapshot(shopSnapshot => {
+    console.log("We are here... XXX")
+    const lineID = shopSnapshot.data().activeLine
+
+    if (liveShopFS2 != null) {liveShopFS2(); console.log("cancelled shopFS2")}; // Shop
+    
+    liveShopFS2 = db.collection('shops').doc(shop).collection("lines").doc(lineID).onSnapshot(statusSnapshot => {
+      var currentSpot = statusSnapshot.data().currentSpot;
+      var latestSpot = statusSnapshot.data().latestSpot;
+  
+
+      shopLineStatus.innerHTML = "";
+
+      if (softIsOwner || softIsStaff) {
+        shopLineStatus.innerHTML += `<h7><center><a href="indexAdmin.html?shop=${shop}">Du er eier eller ansatt av denne køen. Klikk her for administrator siden.</a></center></h7>`
+      }
+
+
+      shopLineStatus.innerHTML += "<h5><center>Nå betjenes nummer: #" + currentSpot + " av #" + latestSpot + "</center></h5>"
+      
+
+      if (statusSnapshot.data().lineClosed != null) {
+        if (statusSnapshot.data().lineClosed){
+          shopServicesDiv.style = "display: none"
+          shopLineStatus.innerHTML += "<br><br><h5><center>(Køen er lukket for nye kunder)</center></h5><br> <center>Dette gjøres vanligvis hvis det er flere folk i køen enn man har mulighet til å betjene i løpet av åpningstiden. Beklager dette!.</center>"
+          return
+        } else {
+          shopServicesDiv.style = "display: block"
+        }
+      }
+
+      if (shopSnapshot.data().options.limitTotalPersReg) {
+        if (statusSnapshot.data().totalPersReg >= shopSnapshot.data().totalPersReg){
+          shopServicesDiv.style = "display: none"
+          shopLineStatus.innerHTML += "<br><br><h5><center>(Køen er lukket for nye gjester)</center></h5><br> <center>Dette gjøres vanligvis hvis det er flere folk i køen enn kapasiteten til stedet.</center>"
+        }
+      }
+
+
+    })
+  })
+}
+
+
+
+function renderSpotCard(spotSnapshot) {
+
+  if (liveSpotFS2 != null) {liveSpotFS2(); console.log("cancelled spotFS2")}; // Spotcard
+  if (liveSpotFS3 != null) {liveSpotFS3(); console.log("cancelled spotFS3")}; // Spotcard
+  if (liveSpotFS4 != null) {liveSpotFS4(); console.log("cancelled spotFS4")}; // Spotcard
+  if (liveSpotFS5 != null) {liveSpotFS5(); console.log("cancelled spotFS5")}; // Spotcard
+
+
+  const lineID = spotSnapshot.data().lineID;   // Spotsnapshot, therefore lineID
+
+
+  spotDiv.innerHTML = spotcardHTML(spotSnapshot);
+
+
+
+  if (allowDeleteInSpot && (spotSnapshot.data().status != 10)) {
+    const deleteDiv = document.getElementById("delete"+spotSnapshot.id+"Div")
+    deleteDiv.innerHTML = `<B>Slett min plass i køen</B>`
+    deleteDiv.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm("Sikker på du vil slette din plass i køen?")) {
+        deleteSpot(spotSnapshot.id,lineID,shop)
+      }
+    })
+  }
+
+  if (spotSnapshot.data().userID != "guest" && !user.isAnonymous){
+      const loggedOutText = document.getElementById('loggedOutDiv')
+      loggedOutText.style = 'display: none'
+  }
+
+
+
+
+  var spotInfoDiv = document.getElementById('spotInfoDiv') // Used for providing updates to the user!
+  var spotInfoAlertDiv = document.getElementById('spotInfoAlertDiv') // Used for providing updates specifically for ALERT
+  const spotsRemainingLive = document.getElementById('spotsRemainingLive')
+  var currentNumLive = document.getElementById('currentNumLive')
+
+  
+  document.getElementById('spotqrcode')
+  .addEventListener('click', function (event) {
+      event.stopPropagation();
+      simpleQR = !simpleQR
+      updateQRcodeSpotCard(baseUrl, shop, lineID, spot); // Refresh QR code only
+  });
+
+  updateQRcodeSpotCard(baseUrl, shop, lineID, spot);
+
+
+  spotcardLiveUpdates(spotSnapshot);
+
+
+}
+
+
+function spotcardHTML(spotSnapshot) {
+
+  let regDateTime = new Date(spotSnapshot.data().time);
+  let formatted_date = regDateTime.getFullYear() + "-" + (regDateTime.getMonth() + 1) + "-" + regDateTime.getDate() + " " + regDateTime.getHours() + ":" + regDateTime.getMinutes() + ":" + regDateTime.getSeconds() 
+
+
+  var serviceArray = []
+  serviceArray = spotSnapshot.data().servicesName;
+  var i;
+  var serviceArrayHtml = ""
+  for (i = 0; i<serviceArray.length; i++) {
+    serviceArrayHtml += "* "+serviceArray[i]+"<br>";
+  }
+
+  var groupHtml = ""
+  if (spotSnapshot.data().persInReg > 0) {
+      groupHtml += `<div class="col l12 s12" style="display: block; margin: auto; text-align: left; font-size: 1em;">Antall personer: ${spotSnapshot.data().persInReg} (inkl deg)<br></div>`;
+  }
+
+  var borderColor = "black";
+  var backgroundColor = "white";
+  if (shopColor == 0) {
+    borderColor = "black";
+    backgroundColor = "white";
+  } else if (shopColor == 1) {
+    borderColor = "orange";
+    backgroundColor = "lightgray";
+  } else if (shopColor == 2) {
+    borderColor = "blue";
+    backgroundColor = "lightblue";
+  }
+
+  if (spotcardViewPersistent == true) {
+  } else {
+    spotcardView = 0
+  }
+
+  var viewSetOne = "block"; // default, see all
+  var viewSetTwo = "block"; // default, see all
+  if (spotcardView == 0) {
+      viewSetOne = "block";
+      viewSetTwo = "none";
+  } else if (spotcardView == 1) {
+    viewSetOne = "none";
+    viewSetTwo = "block";
+  } else {
+    viewSetOne = "block";
+    viewSetTwo = "block";
+  }
+
+
+  var html = "";
+
+
+  if (shopNewSpotview) {
+
+    html += `
+    <div onclick="toggleSpotcard();return false;" class="col l8 offset-l2 s12" style="border: solid ${borderColor};background-color: ${backgroundColor}; border-radius: 25px; margin-bottom:0px; padding: 5px;font-family: Playfair Display;">
+      <div id="lineInfoDiv" class="col l12 s12" style="display: none; margin-top:20px; text-align: center"></div>
+      <div id="spotsRemainingDiv" class="col l12 s12" style="display: block; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="spotsRemainingText" class="col l12 s12" style="display: block; margin: auto; text-align: left; color: black; font-weight: bold;  font-size: 1.75em;">
+          Foran deg i køen:
+          <!-- (i) -->
+          </div>
+          <div id="spotsRemainingLive" class="col l12 s12" style="display: block; text-align: left;font-weight: bold; font-size: 4em;">
+          -
+          </div>
+      </div>
+      <div id="spotNumDiv" class="col l6 s6" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="spotNumText" class="col l12 s12" style="display: block; text-align: left; font-weight: bold">
+          Din plass i køen er:
+          </div>
+          <div id="spotNumValue" class="col l12 s12" style="display: block; text-align: left;font-weight: bold; font-size: 2em;">
+          ${spotSnapshot.data().spotNum}
+          </div>
+      </div>
+      <div id="currentNumDiv" class="col l6 s6" style="display: ${viewSetOne}; margin-top:20px; text-align: center;padding: 0px;">
+          <div id="currentNumText" class="col l12 s12" style="display: block; text-align: left; font-weight: bold">
+          Betjener nå:
+          </div>
+          <div id="currentNumLive" class="col l12 s12" style="display: block; text-align: left;font-weight: bold; font-size: 2em;">
+          -
+          </div>
+      </div>
+      <div id="spotInfoAlertDiv" class="col l12 s12" style="display: block; margin-top:20px: auto; text-align: center; padding: 0px;"></div>
+      <div id="spotInfoDiv" class="col l12 s12" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;"></div>
+      <div id="loggedOutDiv" class="col l12 s12" style="display: block; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="loggedOutText" class="col l12 s12" style="display: block; margin: auto; text-align: left">
+            For å lett kunne finne tilbake til kø-kortet ditt så anbefaler vi at du registrerer deg eller logger inn hvis du allerede er registrert.<br><br>
+          </div>
+          <div id="signUpNowBtn" class="col l6 s6" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.5em;"><a class="waves-effect waves-light btn-small" href="#" onclick="showNewLogin();return false;">Registrer / Logg inn</a></div>
+      </div>
+      <div class="servicesDiv col l12 s12" id="spotServicesDiv" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+            <div id="servicesTitle" class="col l12 s12" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.2em;">
+            Du er registrert med følgende:
+            </div>
+            <div id="servicesText" class="col l12 s12" style="display: block; margin: auto; text-align: left">
+            ${serviceArrayHtml}
+            </div>
+            ${groupHtml}
+      </div>
+
+      <div class="col l12 s12" id="spotQRcodeDiv" style="margin-top:20px; display: ${viewSetTwo}" align="center">
+            <div id="spotqrcode" style="width:250px; height:250px;"></div>
+      </div>
+
+      <div id="spotDetailsDiv" class="col l12 s12" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+            <div class="spotTime col l12 s12" style="display: block; margin: auto; text-align: left; color: black;">${formatted_date}</div>
+            <div class="spotName col l12 s12" style="display: block; margin: auto; text-align: left; color: black;">${spotSnapshot.data().name}</div>
+            <div class="deleteSpot col l12 s12" id="delete${spotSnapshot.id}Div" style="display: block; margin: auto; text-align: left; color: black;">
+            </div>
+      </div>
+
+      <!-- UserID: ${spotSnapshot.data().userID}<br>-->
+    </div>`
+
+
+  } else {
+
+    html += `
+    <div onclick="toggleSpotcard();return false;" class="col l8 offset-l2 s12" style="border: solid ${borderColor};background-color: ${backgroundColor}; border-radius: 25px; margin-bottom:0px; padding: 5px;font-family: Playfair Display;">
+      <div id="lineInfoDiv" class="col l12 s12" style="display: none; margin-top:20px; text-align: center"></div>
+      <div class="spotNumDiv col l12 s12" style="display: block; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="spotNumText" class="col l12 s12" style="display: block; margin: auto; text-align: left; color: black; font-weight: bold; font-size: 1.75em;">
+          Din plass i køen er:
+          </div>
+          <div id="spotNumValue" class="col l12 s12" style="display: block; margin: auto; text-align: left; color: black; font-weight: bold; font-size: 4em;">
+          ${spotSnapshot.data().spotNum}
+          </div>
+      </div>
+      <div id="currentNumDiv" class="col l6 s6" style="display: ${viewSetOne}; margin-top:20px; text-align: center;padding: 0px;">
+          <div id="currentNumText" class="col l12 s12" style="display: block; text-align: left; font-weight: bold">
+          Betjener nå:
+          </div>
+          <div id="currentNumLive" class="col l12 s12" style="display: block; text-align: left;font-weight: bold; font-size: 2em;">
+          -
+          </div>
+      </div>
+      <div id="spotsRemainingDiv" class="col l6 s6" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="spotsRemainingText" class="col l12 s12" style="display: block; text-align: left;font-weight: bold;">
+          Foran deg i køen:
+          <!-- (i) -->
+          </div>
+          <div id="spotsRemainingLive" class="col l12 s12" style="display: block; text-align: left;font-weight: bold; font-size: 2em;">
+          -
+          </div>
+      </div>
+      <div id="spotInfoAlertDiv" class="col l12 s12" style="display: block; margin-top:20px: auto; text-align: center; padding: 0px;"></div>
+      <div id="spotInfoDiv" class="col l12 s12" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;"></div>
+      <div id="loggedOutDiv" class="col l12 s12" style="display: block; margin-top:20px; text-align: center; padding: 0px;">
+          <div id="loggedOutText" class="col l12 s12" style="display: block; margin: auto; text-align: left">
+            For å lett kunne finne tilbake til kø-kortet ditt så anbefaler vi at du registrerer deg eller logger inn hvis du allerede er registrert.<br><br>
+          </div>
+          <div id="signUpNowBtn" class="col l6 s6" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.5em;"><a class="waves-effect waves-light btn-small" href="#" onclick="showNewLogin();return false;">Registrer / Logg inn</a></div>
+          <div id="signUpNowBtn" class="col l6 s6" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.5em;"><a class="waves-effect waves-light btn-small" href="#" onclick="signupModal();return false;">Registrer</a></div>
+          <div id="loginNowBtn" class="col l6 s6" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.5em;"><a class="waves-effect waves-light btn-small" href="#" onclick="loginModal();return false;">Logg inn</a></div>
+      </div>
+      <div class="servicesDiv col l12 s12" id="spotServicesDiv" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+            <div id="servicesTitle" class="col l12 s12" style="display: block; margin: auto; text-align: left;font-weight: bold; font-size: 1.2em;">
+            Du er registrert med følgende:
+            </div>
+            <div id="servicesText" class="col l12 s12" style="display: block; margin: auto; text-align: left">
+            ${serviceArrayHtml}
+            </div>
+            ${groupHtml}
+      </div>
+
+      <div class="col l12 s12" id="spotQRcodeDiv" style="margin-top:20px; display: ${viewSetTwo}" align="center">
+            <div id="spotqrcode" style="width:250px; height:250px;"></div>
+      </div>
+
+      <div id="spotDetailsDiv" class="col l12 s12" style="display: ${viewSetOne}; margin-top:20px; text-align: center; padding: 0px;">
+            <div class="spotTime col l12 s12" style="display: block; margin: auto; text-align: left; color: black;">${formatted_date}</div>
+            <div class="spotName col l12 s12" style="display: block; margin: auto; text-align: left; color: black;">${spotSnapshot.data().name}</div>
+            <div class="deleteSpot col l12 s12" id="delete${spotSnapshot.id}Div" style="display: block; margin: auto; text-align: left; color: black;">
+            </div>
+      </div>
+
+      <!-- UserID: ${spotSnapshot.data().userID}<br>-->
+    </div>`
+
+  } 
+
+  return html;
+}
+
+
+function spotcardLiveUpdates(spotSnapshot) {
+
+  var spotInfoDiv = document.getElementById('spotInfoDiv') // Used for providing updates to the user!
+  var spotInfoAlertDiv = document.getElementById('spotInfoAlertDiv') // Used for providing updates specifically for ALERT
+  const spotsRemainingLive = document.getElementById('spotsRemainingLive')
+  var currentNumLive = document.getElementById('currentNumLive')
+
+  const lineID_ = spotSnapshot.data().lineID;
+  const spotStatus_ = spotSnapshot.data().status;
+  const spotNum_ = spotSnapshot.data().spotNum;
+
+  
+
+
+
+    liveSpotFS5 = db.collection('shops').doc(shop).collection("lines").doc(lineID_).collection("status").doc("arrays").onSnapshot(lineStatusArrayDoc => {
+
+      spotsAheadOfYou = placeInArrays(spotStatus_,spotNum_,lineStatusArrayDoc)
+
+
+
+
+        if (spotStatus_ == 5) {
+          var customText_ = ""
+          if (spotSnapshot.data().shopStaffOwnerDesc != "") {
+            customText_ = spotSnapshot.data().shopStaffOwnerDesc
+          }
+
+          console.log("Vi har nå custom text av: " + customText_);
+          spotNotice(spotsAheadOfYou,spotStatus_,customText_);
+
+        } else {
+          spotNotice(spotsAheadOfYou,spotStatus_);
+        }
+      
+
+        if (spotsAheadOfYou < 0) {
+          spotsRemainingLive.textContent = `-`;
+        } else {
+          spotsRemainingLive.textContent = `${spotsAheadOfYou}`;
+        }
+
+    });
+
+
+    liveSpotFS2 = db.collection('shops').doc(shop).collection("lines").doc(lineID_).onSnapshot(statusSnapshot => {
+      console.log("Checking line status and current spot")
+
+      var lineClosed = false;
+      if (statusSnapshot.data().lineClosed != null) {
+        lineClosed = statusSnapshot.data().lineClosed;
+      }
+
+      if (lineClosed) {
+        /* TEMP close - need to separate lineClose and lineNotOpenForNew #1460
+
+        let lineInfoDiv = document.getElementById('lineInfoDiv')
+        lineInfoDiv.style = "background-color: grey;"
+        lineInfoDiv.innerHTML = "<center><h6>Til informasjon: Dette er i en gammel kø</h6></center>"  
+        */
+      }
+      console.log("Line is closed: ", lineClosed)
+
+      const currentSpot = statusSnapshot.data().currentSpot;
+      currentNumLive.innerHTML = `${currentSpot}`;
+    })
+
+}
+
+
+function placeInArrays(spotStatus_,spotNum_,lineStatusArrayDoc) {
+
+  var arrayList = []
+  var deleteArrayList = []
+
+  for (i = 0; i <= 10; i++) {
+    const checkArray = i.toString();
+    if (lineStatusArrayDoc.get(checkArray) != null) {
+      arrayList[i] = lineStatusArrayDoc.get(checkArray)
+    } else {
+      arrayList[i] = []
+    }
+  }
+
+  if (lineStatusArrayDoc.get("11") != null) {
+    deleteArrayList = lineStatusArrayDoc.get("11")
+  } else {
+    deleteArrayList = []
+  }
+
+  var spotsAheadOfYou = 0; // Default start
+  var yourArray;
+  var yourSpotInStatus = 0 // Default start
+  var sortInStatus0 = true;
+  var sortInStatusRest = false;
+
+
+
+  switch (spotStatus_) {
+    case 0:
+
+      spotsAheadOfYou += arrayList[3].length; // count 3
+      spotsAheadOfYou += arrayList[2].length; // count 2
+      spotsAheadOfYou += arrayList[1].length; // count 1
+
+
+      if (sortInStatus0) {
+        yourArray = arrayList[0].sort(function(a, b) {
+          return a - b;
+        });
+      } else {
+        yourArray = arrayList[0]; // Keep as is
+      }
+
+      if (deleteArrayList.length > 0) {
+        yourArray = removeArrayValuesFromArray(deleteArrayList,yourArray);
+      }
+      
+      yourSpotInStatus = yourArray.indexOf(spotNum_);
+      console.log("Your Spot In Status: ", yourSpotInStatus);
+      console.log("If above is negative, you are not in that array...");
+      spotsAheadOfYou += yourSpotInStatus; // May need to adjust this one...
+
+    break;
+
+    case 1:
+
+      spotsAheadOfYou += arrayList[3].length; // count 3
+      spotsAheadOfYou += arrayList[2].length; // count 2
+
+      if (sortInStatusRest) {
+        yourArray = arrayList[1].sort(function(a, b) {
+          return a - b;
+        });
+      } else {
+        yourArray = arrayList[1]; // Keep as is
+      }
+
+      if (deleteArrayList.length > 0) {
+        yourArray = removeArrayValuesFromArray(deleteArrayList,yourArray);
+      }
+      
+      yourSpotInStatus = yourArray.indexOf(spotNum_);
+      console.log("Your Spot In Status: ", yourSpotInStatus);
+      console.log("If above is negative, you are not in that array...");
+      spotsAheadOfYou += yourSpotInStatus; // May need to adjust this one...
+
+    break;
+
+    case 2:
+
+      spotsAheadOfYou += arrayList[3].length; // count 3
+
+      if (sortInStatusRest) {
+        yourArray = arrayList[2].sort(function(a, b) {
+          return a - b;
+        });
+      } else {
+        yourArray = arrayList[2]; // Keep as is
+      }
+
+      if (deleteArrayList.length > 0) {
+        yourArray = removeArrayValuesFromArray(deleteArrayList,yourArray);
+      }
+      
+      yourSpotInStatus = yourArray.indexOf(spotNum_);
+      console.log("Your Spot In Status: ", yourSpotInStatus);
+      console.log("If above is negative, you are not in that array...");
+      spotsAheadOfYou += yourSpotInStatus; // May need to adjust this one...
+
+
+    break;
+
+    case 3:
+
+
+      if (sortInStatusRest) {
+        yourArray = arrayList[3].sort(function(a, b) {
+          return a - b;
+        });
+      } else {
+        yourArray = arrayList[3]; // Keep as is
+      }
+      
+      if (deleteArrayList.length > 0) {
+        yourArray = removeArrayValuesFromArray(deleteArrayList,yourArray);
+      }
+            
+      yourSpotInStatus = yourArray.indexOf(spotNum_);
+      console.log("Your Spot In Status: ", yourSpotInStatus);
+      console.log("If above is negative, you are not in that array...");
+      spotsAheadOfYou += yourSpotInStatus; // May need to adjust this one...
+
+
+    break;
+
+    case 4:
+
+
+      if (sortInStatusRest) {
+        yourArray = arrayList[4].sort(function(a, b) {
+          return a - b;
+        });
+      } else {
+        yourArray = arrayList[4]; // Keep as is
+      }
+      
+      if (deleteArrayList.length > 0) {
+        yourArray = removeArrayValuesFromArray(deleteArrayList,yourArray);
+      }
+            
+      yourSpotInStatus = yourArray.indexOf(spotNum_);
+      console.log("Your Spot In Status: ", yourSpotInStatus);
+      console.log("If above is negative, you are not in that array...");
+      spotsAheadOfYou += yourSpotInStatus; // May need to adjust this one...
+
+
+    break;
+
+    case 5:
+
+
+      spotsAheadOfYou = -1;
+
+
+    break;
+
+    case 8:
+
+
+      spotsAheadOfYou = -1;
+
+
+    break;
+
+    case 9:
+
+
+      spotsAheadOfYou = -1;
+
+
+    break;
+
+    case 10:
+
+
+      spotsAheadOfYou = -1;
+
+
+    break;
+
+  }
+
+  return spotsAheadOfYou;
+}
+
+
+
+function updateQRcodeSpotCard(baseUrl, shop, lineID, spot){
+
+  var spotQRdiv = document.getElementById("spotqrcode")
+  spotQRdiv.innerHTML = ""; // Manual clear
+
+  spotQRcode = new QRCode(spotQRdiv, {
+    width : 250,
+    height : 250
+  });
+  
+  var currentLink = baseUrl+"?shop="+shop+"&line="+lineID+"&spot="+spot
+
+  if(simpleQR) {
+    currentLink = "http://www.n.n/?spot=" + spot
+  }
+
+  spotQRcode.makeCode(currentLink);
+}
+
+
+
+function toggleSpotcard() {
+  console.log("Switch views on spotcard")
+
+  if (shopNewSpotview) {
+    if (spotcardView == 0) {
+      console.log("Trying to show the spotQRcode...")
+      spotcardView = 1;
+      document.getElementById("spotNumDiv").style.display = "none";
+      document.getElementById("currentNumDiv").style.display = "none";
+      document.getElementById("spotsRemainingDiv").style.display = "block";
+      document.getElementById("spotInfoDiv").style.display = "none";
+      document.getElementById("spotServicesDiv").style.display = "none";
+      document.getElementById("spotQRcodeDiv").style.display = "block";
+      document.getElementById("spotDetailsDiv").style.display = "none";
+  
+    } else {
+      console.log("Trying to show the normal line info...")
+      spotcardView = 0; // Currently we have not started using view 2, but this this can be a shop selection
+      document.getElementById("spotNumDiv").style.display = "block";
+      document.getElementById("currentNumDiv").style.display = "block";
+      document.getElementById("spotsRemainingDiv").style.display = "block";
+      document.getElementById("spotInfoDiv").style.display = "block";
+      document.getElementById("spotServicesDiv").style.display = "block";
+      document.getElementById("spotQRcodeDiv").style.display = "none";
+      document.getElementById("spotDetailsDiv").style.display = "block";
+    }  
+
+  } else {
+    if (spotcardView == 0) {
+      console.log("Trying to show the spotQRcode...")
+      spotcardView = 1;
+      document.getElementById("currentNumDiv").style.display = "none";
+      document.getElementById("spotsRemainingDiv").style.display = "none";
+      document.getElementById("spotInfoDiv").style.display = "none";
+      document.getElementById("spotServicesDiv").style.display = "none";
+      document.getElementById("spotQRcodeDiv").style.display = "block";
+      document.getElementById("spotDetailsDiv").style.display = "none";
+  
+    } else {
+      console.log("Trying to show the normal line info...")
+      spotcardView = 0; // Currently we have not started using view 2, but this this can be a shop selection
+      document.getElementById("currentNumDiv").style.display = "block";
+      document.getElementById("spotsRemainingDiv").style.display = "block";
+      document.getElementById("spotInfoDiv").style.display = "block";
+      document.getElementById("spotServicesDiv").style.display = "block";
+      document.getElementById("spotQRcodeDiv").style.display = "none";
+      document.getElementById("spotDetailsDiv").style.display = "block";
+    }  
+  }
+
+
+}
+
+
+
+function spotNotice(spotsAheadOfYou, spotStatus_ = 0, customText = "") {
+
+  var spotInfoDiv_ = document.getElementById('spotInfoDiv') // Used for providing updates to the user!
+  var spotInfoAlertDiv_ = document.getElementById('spotInfoAlertDiv') // Used for providing updates specifically for ALERT
+  
+
+
+    var statusText = ""; // No status text, if not within the limits
+
+    console.log("Nå er status: " + spotStatus_)
+
+    if (spotStatus_ != 0) {
+
+
+      if (spotStatus_ == 10) {
+        spotInfoAlertDiv_.style = "background-color: grey;"
+        spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtSelfDeleted+"</H5>";
+        spotsAheadOfYou = -99;
+      } else if (spotStatus_ == 8) {
+        spotInfoAlertDiv_.style = "background-color: grey;"
+        spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtDeleted+"</H5>";  
+        spotsAheadOfYou = -99;
+      } else if (spotStatus_ == 4) {
+        spotInfoAlertDiv_.style = "background-color: grey;"
+        spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtNoShow+"</H5>";  
+        spotsAheadOfYou = -99;
+      } else if (spotStatus_ == 3) {
+        spotInfoAlertDiv_.style = "background-color: red;"
+        spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtAlert+"</H5>"
+      }  else if (spotStatus_ == 5) {
+        spotInfoAlertDiv_.style = "background-color: red;"
+        if (shopRoomNotice) {
+          spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtProcessing + "<br>" + customText + "</H5>"
+        } else {
+          spotInfoAlertDiv_.innerHTML = "<H5>"+shopTxtProcessing + "</H5>"
+        }
+        spotsAheadOfYou = -99;
+      } 
+    }
+
+    if (spotsAheadOfYou == -99) {
+      spotInfoDiv_.style = "background-color: grey;"
+      spotInfoDiv_.innerHTML = "" // "no text"
+
+    } else if (spotsAheadOfYou < 0) {
+      spotInfoDiv_.style = "background-color: grey;"
+      spotInfoDiv_.innerHTML = "<H5>"+shopTxtCompleted+"</H5>" // Ideally switch to one more step... so we have "God behandling... på #5" Og velkommen tilbake på #9.
+
+    } else {
+      var previousLimit = 0; // Default start
+      for (i = 0; i < shopLimits.length; i++) {
+        if ((spotsAheadOfYou >= previousLimit) && (spotsAheadOfYou <= shopLimits[i])) {
+
+          statusText += shopLimitTxts[i];
+
+          break; // the for loop
+        } 
+
+        previousLimit = shopLimits[i];
+      }      
+
+      spotInfoDiv_.style = "background-color: grey;"
+      spotInfoDiv_.innerHTML = "<H5>"+statusText+"</H5>" // Ideally switch to one more step... so we have "God behandling... på #5" Og velkommen tilbake på #9.
+
+    }
+
+    return
+
+  
+
+
+
+}
+
+
+
+
+function changeUserLoginSpot(){
+
+
+  console.log("Should show alternative now")
+  spotDiv.innerHTML = "This does not appear to be your spotcard. If you are not signed in, we suggest you sign in with your profile. Or if you are signed in, maybe you are signed in on the wrong profile (if so, click here to log out and sign in again. <br>"
+  spotDiv.innerHTML = "This does not appear to be your spotcard. If you are not signed in, we suggest you sign in with your profile. Or if you are signed in, maybe you are signed in on the wrong profile (if so, click here to log out and sign in again. <br>"
+
+  spotDiv.style = "display: block;";
+
+}
+
+
+
+
+
+
+
+
+
+function signupForServices() {
+
+    var serviceArray = [];
+    var serviceArrayText = [];
+    var selectedArrayId=0;
+    var persInReg = 1 // by default
+  
+    for (i = 0; i < registerServicesForm.length; i++) {
+      if ((registerServicesForm[i].checked) && (registerServicesForm[i].name != "termsCheckbox")) {
+        serviceArray[selectedArrayId] = registerServicesForm[i].id;
+        serviceArrayText[selectedArrayId] = registerServicesForm[i].name;
+        selectedArrayId += 1
+      } else if (registerServicesForm[i].name == "comment") {
+        if (registerServicesForm[i].value != "") {
+          serviceArray[selectedArrayId] = registerServicesForm[i-1].id;
+          serviceArrayText[selectedArrayId] = registerServicesForm[i].value;
+          selectedArrayId += 1
+        }
+      } else if (registerServicesForm[i].id == "persInReg") {
+        persInReg = parseInt(registerServicesForm[i].value)
+      }
+    }
+    
+    var terms_check = false // Default
+    var terms_count = document.getElementById("terms_count").innerText
+    
+    var terms_checkbox = []
+    var terms_Art = []
+    var terms_Rev = []
+    var terms_SubRev = []
+    var terms_Type = []
+
+    var termsCheckboxes = document.getElementsByName("termsCheckbox");
+    var i;
+    for (i = 0; i < termsCheckboxes.length; i++) {
+  
+      thisArt = termsCheckboxes[i].getAttribute("data-Art")
+      console.log("Found Art: " + thisArt)
+  
+      let thisCheck_id = "terms_"+thisArt+"_check"
+      let thisRev_id = "terms_"+thisArt+"_Rev"
+      let thisSubRev_id = "terms_"+thisArt+"_SubRev"
+      let thisType_id = "terms_"+thisArt+"_Type"
+  
+      var thisCheckbox = termsCheckboxes[i].checked
+      var thisRev = parseInt(document.getElementById(thisRev_id).textContent)
+      var thisSubRev = parseInt(document.getElementById(thisSubRev_id).textContent)
+      var thisType = parseInt(document.getElementById(thisType_id).textContent)
+  
+      terms_checkbox.push(thisCheckbox)
+      terms_Art.push(thisArt)
+      terms_Rev.push(thisRev)
+      terms_SubRev.push(thisSubRev)
+      terms_Type.push(thisType)
+    }
+  
+    terms_count = termsCheckboxes.length;
+
+    /*
+    if (terms_count != null) {
+      terms_count = parseInt(terms_count) // Make string to integer...
+
+      for (i = 0; i < terms_count; i++) {
+
+        let thisCheck_id = "terms_"+i+"_check"
+        let thisArt_id = "terms_"+i+"_Art"
+        let thisRev_id = "terms_"+i+"_Rev"
+        let thisSubRev_id = "terms_"+i+"_SubRev"
+        let thisType_id = "terms_"+i+"_Type"
+
+        var thisCheckbox = document.getElementById(thisCheck_id).checked
+        var thisArt = parseInt(document.getElementById(thisArt_id).innerText)
+        var thisRev = parseInt(document.getElementById(thisRev_id).innerText)
+        var thisSubRev = parseInt(document.getElementById(thisSubRev_id).innerText)
+        var thisType = parseInt(document.getElementById(thisType_id).innerText)
+
+        terms_checkbox.push(thisCheckbox)
+        terms_Art.push(thisArt)
+        terms_Rev.push(thisRev)
+        terms_SubRev.push(thisSubRev)
+        terms_Type.push(thisType)
+      }
+    }
+    */
+
+    console.log("Terms count her er nå 2: " + terms_count)
+    console.log(terms_checkbox)
+    console.log(terms_Art)
+    console.log(terms_Rev)
+    console.log(terms_SubRev)
+    console.log(terms_Type)
+
+    
+    if (terms_checkbox.count = 0) {
+      terms_check = true
+      console.log("No terms needed to approve")
+    } else {
+      terms_check = true // Assumed true until checks are found not true
+      
+      for (i = 0; i < terms_count; i++) {
+        if (!terms_checkbox[i] == true) {
+          if(terms_Type[i] == 1 || terms_Type[i] == 2) {
+            terms_check = false
+            i = terms_count
+            console.log("Some required terms have not been accepted")
+            alertUser("Informasjon", "Du må godkjenne vilkårene med * for å kunne registrere deg")
+            return  
+          }
+        }
+      }
+    }
+
+
+    if (selectedArrayId == 0 && shopRequireServices) {
+      alertUser("Informasjon","Du må krysse i for hvilke tjenester du ønsker før du kan registrere deg.")
+      return
+    }
+
+    if (shopLimitTotalPersReg) {
+      if (true) {
+      }
+    }
+
+    if ((user == null || user.isAnonymous) && shopRequireLogin) {
+      if (user != null) {
+        console.log(user.isAnonymous);
+      }
+      alert("Pga krav fra FHI, så må alle registrere seg.")
+      console.log("Trigger SignUp form")
+
+      signupModal()
+      return
+    }
+    
+
+
+    var shopRef = db.collection('shops').doc(shop);
+
+    
+        if (user && !user.isAnonymous) {
+
+          shopRef.collection("lines").doc(shopActiveLine).collection("line").where("userID", "==", uid).where("status", "<=", 3).get().then(spotDocs => {
+            if (spotDocs.size > 0 && shopLimitOneSpot && uid != "guest") {
+              console.log("You already have a spot, or more...")
+              
+              console.log(spotDocs)
+              
+              if (confirm(`Du har allerede en plass i køen (#${spotDocs.docs[0].data().spotNum}). 
+    Klikk Cancel for å komme å gå til din gamle plass.
+    Klikke OK bare hvis du vil SLETTE ditt gamle kønummer, og få en ny bakerst i køen.`)) {
+
+                  spotDocs.forEach(spot => {
+                    
+                    var batch = db.batch();
+
+                    var lineRef = shopRef.collection("lines").doc(shopActiveLine).collection("line").doc(spot.id);
+                    batch.update(lineRef, {
+                      status: 10,
+                      deleted: true
+                    });
+
+                    var lightLineRef = shopRef.collection("lines").doc(shopActiveLine).collection("lightLine").doc(spot.id);
+                    batch.update(lightLineRef, {
+                      status: 10,
+                      deleted: true
+                    });
+                    
+                    batch.commit().then(batchResults =>  {
+
+                        var changeLogRef = shopRef.collection('lines').doc(shopActiveLine).collection('line').doc(spot.id).collection("changeLog");;
+                        changeLogRef.add({
+                          status: 10,
+                          uid: uid,
+                          notes: "Removed by user, due to new signup.",
+                          changedByName: fullname,
+                          timeStampString: Date(Date.now()).toString(),
+                          timeStamp: Date.now()
+                        });
+          
+                        console.log("The current spot num for removal is: " + spot.data().spotNum);
+                        removeSpotFromArrays(spot.data().spotNum, shopActiveLine);
+  
+                    });                        
+                  })
+
+              } else {
+
+                    console.log("Du vil beholde din gamle plass... bra :-) ")
+                    const newHref = `?shop=${shop}&line=${shopActiveLine}&spot=${spotDocs.docs[0].id}`;
+
+                    history.pushState({urlPath:newHref},"",newHref)
+                    spot=spotDocs.docs[0].id;
+                    line=shopActiveLine;
+                    viewCase = "spotCard";
+
+                    setupMainContainer()
+                    
+                    return
+              }
+            }
+
+          executeSignup(shopActiveLine, serviceArray, serviceArrayText, persInReg)
+
+            console.log("Thew new user ID is: " + uid)
+            console.log("Terms count is:")
+            console.log(terms_count)
+
+            for (i = 0; i < terms_count; i++) {
+              console.log("Sjekker: " + i)
+              console.log(terms_checkbox[i])
+              if (terms_checkbox[i] == true) {
+                console.log("Ok")
+
+                console.log("Prøver å lagre på: ")
+                console.log(uid + " - " + terms_Art[i])
+
+                db.collection("users").doc(uid).collection("public").doc("terms").collection(shop).doc("Art_"+terms_Art[i]).set({
+                  Art: terms_Art[i],
+                  Rev: terms_Rev[i],
+                  SubRev: terms_SubRev[i],
+                  Type: terms_Type[i],
+                  uid: uid,
+                  timeStampString: Date(Date.now()).toString(),
+                  timeStamp: Date.now()
+                },{merge: true}).then(newDoc => {
+                  console.log("Shop Terms have been added to user file")
+                })    
+              } else {
+                console.log("Ikke ok")
+              }
+            }    
+          })
+        } else {
+          executeSignup(shopActiveLine, serviceArray, serviceArrayText, persInReg)
+
+            console.log("Thew new user ID is: " + uid)
+            console.log("Terms count is:")
+            console.log(terms_count)
+
+            for (i = 0; i < terms_count; i++) {
+              console.log("Sjekker: " + i)
+              console.log(terms_checkbox[i])
+              if (terms_checkbox[i] == true) {
+                console.log("Ok")
+
+                console.log("Prøver å lagre på: ")
+                console.log(uid + " - " + terms_Art[i])
+
+                db.collection("users").doc(uid).collection("public").doc("terms").collection(shop).doc("Art_"+terms_Art[i]).set({
+                  Art: terms_Art[i],
+                  Rev: terms_Rev[i],
+                  SubRev: terms_SubRev[i],
+                  Type: terms_Type[i],
+                  uid: uid,
+                  timeStampString: Date(Date.now()).toString(),
+                  timeStamp: Date.now()
+                },{merge: true}).then(newDoc => {
+                  console.log("Shop Terms have been added to user file")
+                })    
+              } else {
+                console.log("Ikke ok")
+              }
+            }    
+        }
+    
+}
+
+
+
+function executeSignup(shopActiveLine, serviceArray, serviceArrayText, persInReg) {
+
+  var deviceUsed = window.navigator.userAgent;
+
+  var shopRef = db.collection('shops').doc(shop);
+
+  const newSpotReference = shopRef.collection("lines").doc(shopActiveLine).collection("lightLine").doc();
+  
+  console.log("The newSpot reference is: "+ newSpotReference.id);
+
+  return db.runTransaction(function(transaction) {
+    return transaction.get(shopRef.collection("lines").doc(shopActiveLine)).then(lineStatusDoc => {
+      
+      if (!lineStatusDoc.exists) {
+        console.log("No shop found...!")
+        throw "The line does not exists"
+      }
+      
+      var newSpot = lineStatusDoc.data().latestSpot +1;
+      var newTotalPersReg
+      
+      if (lineStatusDoc.data().totalPersReg != null) {
+        console.log("Pers tot: " + lineStatusDoc.data().totalPersReg)
+
+        newTotalPersReg = lineStatusDoc.data().totalPersReg + persInReg;
+      } else {
+        newTotalPersReg = persInReg;
+      }            
+      transaction.update(shopRef.collection("lines").doc(shopActiveLine), {
+        latestSpot: newSpot,
+        totalPersReg: newTotalPersReg
+      });
+      
+      var currentIsAnonymous = true; // This is not really correct... (but anonymous and guest are nearly the same)
+      if (user != null) {
+        currentIsAnonymous = user.isAnonymous;
+      }
+        
+      transaction.set(shopRef.collection("lines").doc(shopActiveLine).collection("line").doc(newSpotReference.id),  {
+        name: fullname,
+        time: Date(Date.now()).toString(),
+        timeStamp: Date.now(),
+        services: serviceArray,
+        servicesName: serviceArrayText,
+        persInReg: persInReg,
+        spotNum: newSpot,
+        userID: uid,
+        email: email, // default if no email added...
+        phone: phone, // default if no phone added
+        countrycode: countrycode, // 
+        guest: currentIsAnonymous, // Specifies whether it is registered as anonymous or
+        status: 0, // Relates to processing steps (0 - in line, 5 - processing, 8 - cancelled, 9 - complete)    
+        lineID: shopActiveLine, // This is used for easy reference to the correct line later on    
+        shopID: shop // This is used for easy reference to the correct shop at later stages
+      })
+
+      transaction.set(shopRef.collection("lines").doc(shopActiveLine).collection("lightLine").doc(newSpotReference.id),  {
+        name: fullname,
+        time: Date(Date.now()).toString(), // Is this needed, or automatic?
+        timeStamp: Date.now(),
+        spotNum: newSpot,
+        persInReg: persInReg,
+        lineID: shopActiveLine,
+        shopID: shop,
+        status: 0 // Relates to processing steps (0 - in line, 5 - processing, 8 - cancelled, 9 - complete)        
+      })
+
+      transaction.set(shopRef.collection("lines").doc(shopActiveLine).collection("line").doc(newSpotReference.id).collection("details").doc("device"),  {
+        device: deviceUsed
+      })
+
+      var lineStatusRef = shopRef.collection("lines").doc(shopActiveLine).collection("status").doc("arrays");          
+      transaction.set(lineStatusRef, {
+        0: firebase.firestore.FieldValue.arrayUnion(newSpot) // Add the newSpot to the Status 0 array
+      },{merge: true});
+
+      transaction.set(db.collection("spotIDs").doc(newSpotReference.id), {
+        shopID: shop,
+        lineID: shopActiveLine,
+        time: Date(Date.now()).toString(),
+        timeStamp: Date.now()
+      });
+    });
+  }).then(function() {
+
+        spot = newSpotReference.id;
+        line = shopActiveLine;
+        viewCase = "spotCard";
+
+        const newHref = `?shop=${shop}&line=${line}&spot=${spot}`;
+        history.pushState({urlPath:newHref},"",newHref);
+
+
+
+        addSpotToUser(shop,shopActiveLine,spot)  // (if "guest", then function will stop)
+        
+        triggerAlert(0,shop,shopActiveLine,spot);
+
+
+        setupMainContainer();
+        
+        var changeLogRef = shopRef.collection('lines').doc(shopActiveLine).collection('line').doc(newSpotReference.id).collection("changeLog");;
+        changeLogRef.add({
+          status: 0,
+          uid: uid,
+          notes: "Users sign-up.",
+          version: "1.0",
+          changedByName: fullname,
+          timeStampString: Date(Date.now()).toString(),
+          timeStamp: Date.now()
+        });
+
+    }).catch(function(err) {
+      console.log("Error adding the services");
+      console.error(err);            
+    })
+}
+
+
+
+
+
+
+const findShopForm = document.querySelector('#findShop-form');
+findShopForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  console.log("Search is: "+findShopForm.findShopNum.value)
+  searchMethod(findShopForm.findShopNum.value)
+});
+
+
+function searchMethod(searchstring) {
+
+  if (searchstring == "MC_9090") {
+  } else if (searchstring == "MC_9091") {
+  } else if (searchstring == "MC_999") {
+    viewCase = "shopStatus";
+    console.log("Shop Status")
+    setupMainContainer();
+    return
+  }
+  
+  console.log(searchstring);
+  const cleanSearchString =  searchstring.replace('#','');
+  console.log(cleanSearchString);
+
+  db.collection('shopNum').get().then(snapshot => {
+    var shopExists = false
+    var shopID = ""
+
+    console.log("We go here....")
+    snapshot.forEach(snap => {
+      if (snap.data().number == cleanSearchString) {
+        shopExists = true;
+        shopID = snap.data().ref
+        console.log("And here....")
+        return;
+      }
+    })
+
+    if (shopExists) {
+      console.log("And here 2....")
+      shop = shopID
+      viewCase = "shopServices"
+      setupMainContainer()
+    }
+  })
+}
+
+
+
+
+
+
+
+
+
+function mySpots() {
+  while( mySpotsList.firstChild ){
+    mySpotsList.removeChild( mySpotsList.firstChild );
+  }
+  
+  if (liveMySpotsFS1 != null) {liveMySpotsFS1(); console.log("cancelled spotFS1")}; // Spotcard
+
+  if (user!=null) {
+      liveMySpotsFS1 = db.collection("users").doc(uid).collection("mySpots").onSnapshot(mySpotsSnapshot => {
+        let changes = mySpotsSnapshot.docChanges();
+        changes.forEach(change => {
+            
+            if(change.type == 'added'){
+              renderMySpots(change.doc);
+            } else if (change.type == 'removed'){
+              var i;
+              for (i = 0; i < mySpotsList.childElementCount; i++) {
+                console.log(mySpotsList.children[i].getAttribute('spotID'))
+                if (mySpotsList.children[i].getAttribute('spotID') == change.doc.id) {
+                  let li = mySpotsList.children[i];
+                  mySpotsList.removeChild(li);
+                  return
+                }
+              }        
+          }
+        });
+      })
+  } else {
+  }
+  const mySpotsModal = document.getElementById('modal-mySpots');
+  var instance = M.Modal.getInstance(mySpotsModal);
+  instance.open()
+}
+
+function renderMySpots(doc) {
+
+    let li = document.createElement('li');
+    let spotInfo = document.createElement('span');
+    let goTo = document.createElement('span');
+    let cross = document.createElement('span');
+
+    li.setAttribute('spotID', doc.id);
+    spotInfo.textContent = doc.data().shopName + "(" + doc.data().spotNum + ")";
+    
+
+    goTo.textContent = 'åpne';
+    goTo.setAttribute('class', 'secondary-content');
+    goTo.style = ('display: inline-block; width: 40px;')
+
+    cross.textContent = 'slett';
+    cross.setAttribute('class', 'secondary-content');
+    cross.style = ('display: inline-block; width: 40px;')
+
+    li.style.border = "solid 1px #000000"
+  
+    li.appendChild(spotInfo);
+    li.appendChild(cross);
+    li.appendChild(goTo);
+    
+    mySpotsList.appendChild(li);
+  
+
+  goTo.addEventListener('click', (e) => {
+    e.stopPropagation();
+    let id = e.target.parentElement.getAttribute('spotID');
+
+    db.collection('users').doc(uid).collection('mySpots').doc(id).get().then(spotDoc => {
+
+      shop = spotDoc.data().shopID;
+      line = spotDoc.data().lineID;
+      spot = id; //spotDoc.ref;
+
+      viewCase = "spotCard";
+
+      console.log("spot is NOW:" + spot);
+
+      const newHref = `?shop=${shop}&line=${line}&spot=${spot}`;
+      
+      history.pushState({urlPath:newHref},"",newHref);
+      setupMainContainer();
+
+    })
+
+    const mySpotsModal = document.getElementById('modal-mySpots');
+    var instance = M.Modal.getInstance(mySpotsModal);
+    instance.close()  
+
+  });
+
+  cross.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let mySpotID = e.target.parentElement.getAttribute('spotID');
+
+      deleteMySpot(mySpotID)
+  });
+}
+
+function deleteMySpot(mySpotID) {
+
+
+
+  db.collection('users').doc(uid).collection('mySpots').doc(mySpotID).get().then(spotDoc => {
+
+    var batch = db.batch();
+
+    var lineRef = db.collection('shops').doc(spotDoc.data().shopID).collection('lines').doc(spotDoc.data().lineID).collection('line').doc(mySpotID);
+    batch.update(lineRef, {
+      status: 10,
+      updatedById: uid,
+      updatedByName: fullname,
+      updatedTime: Date(Date.now()).toString()
+    });
+
+    var lightLineRef = db.collection('shops').doc(spotDoc.data().shopID).collection('lines').doc(spotDoc.data().lineID).collection('lightLine').doc(mySpotID);
+    batch.update(lightLineRef, {
+      status: 10
+    });
+
+    batch.commit().then(batchResults =>  {
+
+          var changeLogRef = db.collection('shops').doc(spotDoc.data().shopID).collection('lines').doc(spotDoc.data().lineID).collection('line').doc(mySpotID).collection("changeLog");
+          changeLogRef.add({
+            status: 10,
+            uid: uid,
+            changedByName: fullname,
+            timeStampString: Date(Date.now()).toString(),
+            timeStamp: Date.now()
+          });          
+    });
+    
+    db.collection('users').doc(uid).collection('mySpots').doc(mySpotID).delete();
+
+  })
+}
+
+function deleteSpot(spotID,lineID,shopID) {
+
+  var isSpotOwner = false // by default
+  var isOwnerOrStaffHere = false // by default
+  
+  db.collection('shops').doc(shopID).collection('lines').doc(lineID).collection('line').doc(spotID).get().then(spotDoc => {
+
+    if (spotDoc.data().userID == uid) {
+      isSpotOwner = true;
+    }
+
+    db.collection('shops').doc(shopID).get().then(shopDoc => {
+      isOwnerOrStaffHere = isOwnerOrStaff(shopDoc,uid);
+
+      var userIsSpotOwnerStaffOrOwner = false;
+      if (isOwnerOrStaffHere || isSpotOwner) {
+        userIsSpotOwnerStaffOrOwner = true;
+      }
+  
+      if (userIsSpotOwnerStaffOrOwner){
+            var batch = db.batch();
+  
+            var lineRef = db.collection('shops').doc(shopID).collection('lines').doc(lineID).collection('line').doc(spotID);
+            batch.update(lineRef, {
+              status: 10,
+              updatedById: uid,
+              updatedByName: fullname,
+              updatedTime: Date(Date.now()).toString()
+            });
+  
+            var lightLineRef = db.collection('shops').doc(shopID).collection('lines').doc(lineID).collection('lightLine').doc(spotID);
+            batch.update(lightLineRef, {
+              status: 10
+            });
+  
+            batch.commit().then(batchResults =>  {
+  
+                  
+                var changeLogRef = db.collection('shops').doc(shopID).collection('lines').doc(lineID).collection('line').doc(spotID).collection("changeLog");;
+                changeLogRef.add({
+                  status: 10,
+                  uid: uid,
+                  changedByName: fullname,
+                  timeStampString: Date(Date.now()).toString(),
+                  timeStamp: Date.now()
+                });
+  
+                console.log("NÅ skal det fungere")
+                
+                removeSpotFromArrays(spotDoc.data().spotNum, lineID)
+                
+            });
+            
+            db.collection('users').doc(uid).collection('mySpots').doc(spotID).delete();
+  
+      } else {
+        console.log("You are not the spot or shop owner/staff. Tested by ownership.")
+      }  
+      
+    });
+
+
+  }).catch(err => {
+    console.log("Your are likely not the spot or shop owner/staff:", err);
+  })
+}
+
+
+
+
+
+
+
+function myShops() {
+  while( myShopsOwnerList.firstChild ){
+    myShopsOwnerList.removeChild( myShopsOwnerList.firstChild );
+  }
+  while( myShopsStaffList.firstChild ){
+    myShopsStaffList.removeChild( myShopsStaffList.firstChild );
+  }
+
+  var newShopBtn = document.getElementById('newShopBtn')
+  var showTermsListNKBtn = document.getElementById('nk_termsBtn')
+
+  if (admin) {
+    newShopBtn.style = "display: block"
+    showTermsListNKBtn.style = "display: block"
+
+  } else {
+    newShopBtn.style = "display: none"
+    showTermsListNKBtn.style = "display: none"
+  }
+
+
+  if (liveMyShopsFS1 != null) {liveMyShopsFS1(); console.log("cancelled spotFS1")}; // Spotcard
+  if (liveMyShopsFS2 != null) {liveMyShopsFS2(); console.log("cancelled spotFS1")}; // Spotcard
+
+  if (user!=null) {
+      liveMyShopsFS1 = db.collection("users").doc(uid).collection("ownerOf").onSnapshot(myOwnerSnapshot => {
+        let changes = myOwnerSnapshot.docChanges();
+        changes.forEach(change => {
+            
+            if(change.type == 'added'){
+              db.collection("shops").doc(change.doc.data().shopRef).get().then(shopDoc => {
+                renderMyShops(change.doc,shopDoc,"ownerOf");
+              }).catch(err => {
+                console.log("No shop found?", err)
+                renderMyShops(change.doc,null,"ownerOf");
+              })
+            } else if (change.type == 'removed'){
+              var i;
+              for (i = 0; i < myShopsOwnerList.childElementCount; i++) {
+                console.log(myShopsOwnerList.children[i].getAttribute('shopID'))
+                if (myShopsOwnerList.children[i].getAttribute('shopID') == change.doc.id) {
+                  let li = myShopsOwnerList.children[i];
+                  myShopsOwnerList.removeChild(li);
+                  return
+                }
+              }        
+          }
+        });
+      })
+
+    liveMyShopsFS2 = db.collection("users").doc(uid).collection("staffIn").onSnapshot(myStaffSnapshot => {
+      let changes = myStaffSnapshot.docChanges();
+      changes.forEach(change => {
+          console.log("SHOULD WORK.... #99")
+          if(change.type == 'added'){
+            db.collection("shops").doc(change.doc.data().shopRef).get().then(shopDoc => {
+              renderMyShops(change.doc,shopDoc,"staffIn");
+            }).catch(err => {
+              console.log("No shop found?", err)
+              renderMyShops(change.doc,null,"staffIn");
+            })
+            
+          } else if (change.type == 'removed'){
+            var i;
+            for (i = 0; i < myShopsStaffList.childElementCount; i++) {
+              console.log(myShopsStaffList.children[i].getAttribute('spotID'))
+              if (myShopsStaffList.children[i].getAttribute('spotID') == change.doc.id) {
+                let li = myShopsStaffList.children[i];
+                myShopsStaffList.removeChild(li);
+                return
+              }
+            }        
+        }
+      });
+    })
+  }
+
+  const myShopsModal = document.getElementById('modal-myShops');
+  var instance = M.Modal.getInstance(myShopsModal);
+  instance.open()
+  
+}
+
+
+function renderMyShops(myShopDoc,shopDoc,shopType) {
+  
+  let li = document.createElement('li');
+  let shopSpan = document.createElement('span');
+  let goTo = document.createElement('span');
+  let cross = document.createElement('span');
+
+
+  li.setAttribute(shopType+"ID", myShopDoc.id);
+  shopSpan.textContent = shopDoc.data().name;
+
+  goTo.textContent = 'åpne';
+  goTo.setAttribute('class', 'secondary-content');
+  goTo.style = ('display: inline-block; width: 40px;')
+
+  cross.textContent = 'slett';
+  cross.setAttribute('class', 'secondary-content');
+  cross.style = ('display: inline-block; width: 40px;')
+
+  li.style.border = "solid 1px #000000"
+
+  li.appendChild(shopSpan);
+  li.appendChild(cross);
+  li.appendChild(goTo);
+  
+  switch(shopType) {
+    case "ownerOf":
+      myShopsOwnerList.appendChild(li);
+      break;
+   
+    case "staffIn":
+      myShopsStaffList.appendChild(li);
+      break;
+    
+    case "favorite":
+      break;
+    
+    default:
+
+  }
+
+  goTo.addEventListener('click', (e) => {
+    e.stopPropagation();
+    let id = e.target.parentElement.getAttribute(shopType+'ID');
+    console.log("The ID we get here is :"+id)
+    console.log(id)
+
+    db.collection('users').doc(uid).collection(shopType).doc(id).get().then(shopDoc => {
+
+      shop = shopDoc.data().shopRef
+
+      const newHref = `?shop=${shop}`;
+      
+      history.pushState({urlPath:newHref},"",newHref)    
+      viewCase = "lineFlow" // as default...   if FAVORITE, should be the shopServices...
+      setupMainContainer()
+
+    })
+
+    const myShopsModal = document.getElementById('modal-myShops');
+    var instance = M.Modal.getInstance(myShopsModal);
+    instance.close()  
+
+  });
+
+  if (softIsOwner) {
+    cross.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let id = e.target.parentElement.getAttribute(shopType+'ID');
+      console.log("The ID we get here is :"+id)
+      console.log(id)
+  
+      if (confirm(`Sure you want to delete this shop?`)) {
+        db.collection('users').doc(uid).collection(shopType).doc(id).get().then(shopDoc => {
+        shop = shopDoc.data().shopRef
+  
+          console.log("Slett shop...")
+          deleteShop(shop);;
+        
+            })      
+      } else {
+        console.log("Ikke slett...")
+      } 
+    });  
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  var modals = document.querySelectorAll('.modal');
+  M.Modal.init(modals);
+  
+  var items = document.querySelectorAll('.collapsible');
+  M.Collapsible.init(items);
+
+});
+
+
+
+
+
+function closeModal(modalName){
+  const modalToClose = document.getElementById(modalName);
+  var instance = M.Modal.getInstance(modalToClose);
+  instance.close()
+}
+
+
+
+
+
+
+
+
+function removeSpotFromArrays(spotNum, line) {
+
+  console.log("Trying to remove... spot number: " + spotNum)
+  console.log("Trying to remove... from line: " + line)
+  console.log("Trying to remove... in shop: " + shop)
+
+  var batch2 = db.batch();
+
+  var lineStatusRef = db.collection('shops').doc(shop).collection("lines").doc(line).collection("status").doc("arrays");
+          
+  batch2.set(lineStatusRef, {
+    11: firebase.firestore.FieldValue.arrayUnion(spotNum)
+  },{merge: true});
+
+  batch2.commit()
+  .catch(err => {
+    console.log("You do not have access to the arrays...", err)
+  });;
+
+  console.log("commit done on remove from arrays");
+}
+

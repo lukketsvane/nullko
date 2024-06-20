@@ -1,19 +1,26 @@
 // app/api/spotIDs/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import { firebaseApp } from '@/lib/firebase';
+import { NextResponse } from 'next/server';
+import { firestore } from '@/lib/firebase';
 
-const db = getFirestore(firebaseApp);
-
-export async function POST(req: NextRequest) {
-  const { lineId, shopId, time, timeStamp } = await req.json();
-
-  const newSpot = { lineId, shopId, time, timeStamp };
-
+export async function POST(request: Request) {
   try {
-    const docRef = await addDoc(collection(db, 'spotIDs'), newSpot);
-    return NextResponse.json({ id: docRef.id, ...newSpot }, { status: 201 });
+    const { lineID, shopID, time, timeStamp } = await request.json();
+
+    if (!lineID || !shopID || !time || !timeStamp) {
+      return NextResponse.json({ error: 'Alle feltene må fylles ut.' }, { status: 400 });
+    }
+
+    const spotRef = firestore.collection('spotIDs').doc();
+    await spotRef.set({
+      lineID,
+      shopID,
+      time,
+      timeStamp,
+    });
+
+    return NextResponse.json({ message: 'Registrering vellykket' }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Error creating spotID:', error);
+    return NextResponse.json({ error: 'Registrering mislyktes' }, { status: 500 });
   }
 }

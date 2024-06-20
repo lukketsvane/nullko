@@ -2,9 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Image from 'next/image';
 import Link from 'next/link';
 import QueueForm from '@/components/queue-form';
 
@@ -20,7 +18,6 @@ type Shop = {
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const [shop, setShop] = useState<Shop | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchShop() {
@@ -39,26 +36,26 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <div className="min-h-screen bg-whiteSmoke p-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6 border-2 border-black">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold text-gray-800">{shop.name}</h1>
+          <h1 className="text-4xl font-bold text-black">{shop.name}</h1>
           <Link href="/dashboard/shops">
             <div className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer">Tilbake</div>
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h2 className="text-2xl font-bold mb-4">Beskrivelse</h2>
-            <p className="text-gray-700">{shop.description}</p>
-            <h2 className="text-2xl font-bold mt-6 mb-4">Informasjon</h2>
-            <p className="text-gray-700"><strong>Adresse:</strong> {shop.address}</p>
-            <p className="text-gray-700"><strong>Telefon:</strong> {shop.phone}</p>
-            <p className="text-gray-700"><strong>Maks venteroom:</strong> {shop.maxWaitRoom}</p>
-            <p className="text-gray-700"><strong>Info:</strong> {shop.info}</p>
+            <h2 className="text-2xl font-bold mb-4 text-black">Beskrivelse</h2>
+            <p className="text-dimGrey">{shop.description}</p>
+            <h2 className="text-2xl font-bold mt-6 mb-4 text-black">Informasjon</h2>
+            <p className="text-dimGrey"><strong>Adresse:</strong> {shop.address}</p>
+            <p className="text-dimGrey"><strong>Telefon:</strong> {shop.phone}</p>
+            <p className="text-dimGrey"><strong>Maks venteroom:</strong> {shop.maxWaitRoom}</p>
+            <p className="text-dimGrey"><strong>Info:</strong> {shop.info}</p>
           </div>
         </div>
-        <QueueForm shopId={shop.id} />
+        <QueueForm shopID={shop.id} />
       </div>
     </div>
   );
